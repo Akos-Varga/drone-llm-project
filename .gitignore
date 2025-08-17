@@ -1,3 +1,4 @@
 .env
 models
 voxl2
+__pycache__/
