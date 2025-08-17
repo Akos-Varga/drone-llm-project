@@ -1,0 +1,8 @@
+aw.fly_to([x, y, z], drone_id): Move the specified drone (drone_id) to XYZ
+aw.get_drone_position(drone_id): Get current position [x, y, z] of the the specified drone (drone_id)
+aw.get_yaw(drone_id): Get the current yaw in degrees of the specified drone (drone_id)
+aw.set_yaw(yaw_deg, drone_id): Set the yaw angle in degrees of the specified drone (drone_id)
+aw.takeoff(drone_id): Take off and hover with the specified drone (drone_id)
+aw.land(drone_id): Land at current position with the specified drone (drone_id)
+aw.capture_image(drone_id): Captures an image with the main camera of the specified drone (drone_id)
+aw.get_thermal_image(drone_id): Captures a thermal image with the thermal camera of the specified drone (drone_id)

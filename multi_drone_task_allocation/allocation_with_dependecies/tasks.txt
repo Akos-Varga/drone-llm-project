@@ -1,0 +1,101 @@
+Take RGB images of RoofTop1 and RoofTop2 with the same drone.
+Pick up a payload from House2 and deliver it to House3.
+Take an RGB image of each house in the order of House2, House3, House1 with the same drone.
+Take a thermal image of Tower then take an RGB image of it.
+Deliver a payload from RoofTop1 to House2. Also take thermal images of SolarPanel1 and SolarPanel2 with the same drone.
+
+
+
+1. Pick up a payload from SolarPanel1 and deliver it to Base.
+
+subtasks = [
+    {'name': 'SubTask1', 'object': 'SolarPanel1', 'skill': 'PickupPayload', 'depends_on': None, 'same_drone_as': None},
+    {'name': 'SubTask2', 'object': 'Base', 'skill': 'ReleasePayload', 'depends_on': 'SubTask1', 'same_drone_as': 'SubTask1'}
+]
+
+schedule = {
+  "waves": [
+    {"name": "Wave1", "subtasks": ["SubTask1"]},
+    {"name": "Wave2", "subtasks": ["SubTask2"]}
+  ],
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2"]
+  ]
+}
+
+2. Take a thermal image of House2, after that with the same drone take an RGB image of House3.
+
+subtasks = [
+    {'name': 'SubTask1', 'object': 'House2', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': None},
+    {'name': 'SubTask2', 'object': 'House3', 'skill': 'CaptureRGBImage', 'depends_on': 'SubTask1', 'same_drone_as': 'SubTask1'}
+]
+
+schedule = {
+  "waves": [
+    {"name": "Wave1", "subtasks": ["SubTask1"]},
+    {"name": "Wave2", "subtasks": ["SubTask2"]}
+  ],
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2"]
+  ]
+}
+
+3. Deliver a package from House1 to Tower. Take RGB images of SolarPanel1 and SolarPanel2 with the same drone.
+
+subtasks = [
+    {'name': 'SubTask1', 'object': 'House1', 'skill': 'PickupPayload', 'depends_on': None, 'same_drone_as': None},
+    {'name': 'SubTask2', 'object': 'Tower', 'skill': 'ReleasePayload', 'depends_on': 'SubTask1', 'same_drone_as': 'SubTask1'},
+    {'name': 'SubTask3', 'object': 'SolarPanel1', 'skill': 'CaptureRGBImage', 'depends_on': None, 'same_drone_as': None},
+    {'name': 'SubTask4', 'object': 'SolarPanel2', 'skill': 'CaptureRGBImage', 'depends_on': None, 'same_drone_as': 'SubTask3'}
+]
+
+schedule = {
+  "waves": [
+    {"name": "Wave1", "subtasks": ["SubTask1", "SubTask3"]},
+    {"name": "Wave2", "subtasks": ["SubTask2", "SubTask4"]}
+  ],
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2"],
+    ["SubTask3", "SubTask4"]
+  ]
+}
+
+4. Take thermal image of both solar panels. Take thermal image of all houses with the same drone.
+
+subtasks = [
+    {'name': 'SubTask1', 'object': 'SolarPanel1', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': None},
+    {'name': 'SubTask2', 'object': 'SolarPanel2', 'skill': 'CaptureThermalImage', 'depends_on': 'SubTask1', 'same_drone_as': None},
+    {'name': 'SubTask3', 'object': 'House1', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': None},
+    {'name': 'SubTask4', 'object': 'House2', 'skill': 'CaptureThermalImage', 'depends_on': 'SubTask3', 'same_drone_as': 'SubTask3'},
+    {'name': 'SubTask5', 'object': 'House3', 'skill': 'CaptureThermalImage', 'depends_on': 'SubTask4', 'same_drone_as': 'SubTask3'}
+]
+
+schedule = {
+  "waves": [
+    {"name": "Wave1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"]},
+    {"name": "Wave2", "subtasks": ["SubTask4"]},
+    {"name": "Wave3", "subtasks": ["SubTask5"]}
+  ],
+  "same_drone_groups": [
+    ["SubTask3", "SubTask4", "SubTask5"]
+  ]
+}
+
+Take RGB image of the tower then with this drone deliver a payload from Tower to House2.
+
+subtasks = [
+    {'name': 'SubTask1', 'object': 'Tower', 'skill': 'CaptureRGBImage', 'depends_on': None, 'same_drone_as': None},
+    {'name': 'SubTask2', 'object': 'Tower', 'skill': 'PickupPayload', 'depends_on': 'SubTask1', 'same_drone_as': 'SubTask1'},
+    {'name': 'SubTask3', 'object': 'House2', 'skill': 'ReleasePayload', 'depends_on': 'SubTask2', 'same_drone_as': 'SubTask2'}
+]
+
+schedule = {
+  "waves": [
+    {"name": "Wave1", "subtasks": ["SubTask1"]},
+    {"name": "Wave2", "subtasks": ["SubTask2"]},
+    {"name": "Wave3", "subtasks": ["SubTask3"]}
+  ],
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2", "SubTask3"]
+  ]
+}
