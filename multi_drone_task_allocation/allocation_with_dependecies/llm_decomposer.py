@@ -1,6 +1,6 @@
-from task_decompose_conversation_v2 import messages as prompt
-# from scheduler import messages as prompt
-from test_tasks import tasks
+# from task_decompose_conversation_v2 import messages as prompt
+from scheduler import messages as prompt
+from test_tasks import tasks, tasks_decomposed
 
 import openai
 import time
@@ -40,17 +40,6 @@ def LM(model, messages):
             output += content
         return output
 
-# Tasks ------------------------------------------------------------------
-
-#tasks =[("Task1", "Pick up a payload from SolarPanel1 and deliver it to Base."),
-#        ("Task2", "Take a thermal image of House2, after that with the same drone take an RGB image of House3."),
-#        ("Task3", "Deliver a package from House1 to Tower. Take RGB images of SolarPanel1 and SolarPanel2 with the same drone."),
-#        ("Task4", "Take thermal image of both solar panels. Take thermal image of all houses with the same drone."),
-#        ("Task5", "Take RGB image of the Tower then with this drone deliver a payload from Tower to House2.")
-#        ]
-
-
-
 # Models -----------------------------------------------------------------
 
 m1 = "qwen2.5-coder:1.5b"
@@ -61,12 +50,12 @@ m5 = "gpt-4o-mini"
 
 # Inference --------------------------------------------------------------
 
-for task_name, task in tasks:
+for task_name, task in tasks_decomposed:
     base = prompt
     messages = [*base, {"role": "user", "content": task}]
     #print(messages)
     print(task_name + "\nTask description: " + task + "\n")
     start_time = time.time()
-    LM(model=m5, messages=messages)
+    LM(model=m1, messages=messages)
     end_time = time.time()
     print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)

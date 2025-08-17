@@ -5,15 +5,24 @@ subtasks = [
     {{'name': 'SubTask1', 'object': '<LocationName>', 'skill': '<SkillName>', 'depends_on': <'SubTaskX' or None>, 'same_drone_as': <'SubTaskX' or None>}},
     ...
 ]
+             
+Return only JSON of the form:
+schedule = {
+  "waves": [
+    {"name": "Wave1", "subtasks": ["SubTask...","SubTask..."]},
+    {"name": "Wave2", "subtasks": ["SubTask..."]}
+  ],
+  "same_drone_groups": [
+    ["SubTaskA", "SubTaskB", ...],
+    ...
+  ]
+}
 
 Rules:
 1) A task can be scheduled only after all its depends_on tasks' waves.
 2) For any same_drone group without order, tasks must be in different waves with the group's anchor first.
-3) Tasks from different sentences are independent; do not add cross-sentence links.
-4) Minimize number of waves.
-
-Return only:
-{"waves": [["SubTask...","SubTask..."],["SubTask..."]]}"""},
+3) Minimize number of waves.
+"""},
 
 # Example 1 ------------------------------------------------------------------------------------------
 {'role':'user', 'content': '''

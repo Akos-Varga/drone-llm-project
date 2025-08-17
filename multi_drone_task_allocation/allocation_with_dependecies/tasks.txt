@@ -4,7 +4,7 @@ Take an RGB image of each house in the order of House2, House3, House1 with the 
 Take a thermal image of Tower then take an RGB image of it.
 Deliver a payload from RoofTop1 to House2. Also take thermal images of SolarPanel1 and SolarPanel2 with the same drone.
 
-
+Test ---------------------------------------------------------------------------------------------------------------------------
 
 1. Pick up a payload from SolarPanel1 and deliver it to Base.
 
@@ -64,10 +64,10 @@ schedule = {
 
 subtasks = [
     {'name': 'SubTask1', 'object': 'SolarPanel1', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': None},
-    {'name': 'SubTask2', 'object': 'SolarPanel2', 'skill': 'CaptureThermalImage', 'depends_on': 'SubTask1', 'same_drone_as': None},
+    {'name': 'SubTask2', 'object': 'SolarPanel2', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': None},
     {'name': 'SubTask3', 'object': 'House1', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': None},
-    {'name': 'SubTask4', 'object': 'House2', 'skill': 'CaptureThermalImage', 'depends_on': 'SubTask3', 'same_drone_as': 'SubTask3'},
-    {'name': 'SubTask5', 'object': 'House3', 'skill': 'CaptureThermalImage', 'depends_on': 'SubTask4', 'same_drone_as': 'SubTask3'}
+    {'name': 'SubTask4', 'object': 'House2', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': 'SubTask3'},
+    {'name': 'SubTask5', 'object': 'House3', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': 'SubTask3'}
 ]
 
 schedule = {
@@ -81,7 +81,7 @@ schedule = {
   ]
 }
 
-Take RGB image of the tower then with this drone deliver a payload from Tower to House2.
+5. Take RGB image of the tower then with this drone deliver a payload from Tower to House2.
 
 subtasks = [
     {'name': 'SubTask1', 'object': 'Tower', 'skill': 'CaptureRGBImage', 'depends_on': None, 'same_drone_as': None},
