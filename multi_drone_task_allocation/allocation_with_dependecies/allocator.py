@@ -18,10 +18,10 @@ INPUT JSON includes:
 - "subtasks": [ {"name": "<SubTaskName>": { "skill": "<Skill>", "object": "<ObjectName>" }, ... }]
 
 CONSTRAINTS
-1) Skill match: Assign each subtask only to a drone that has the required skill.
-2) Same-drone groups: Subtasks in the same group must use the same drone, which must have all skills required by that group.
-3) Per-wave exclusivity: In the same wave, one drone may do only one subtask.
-4) Determinism: If multiple drones qualify, pick the one with the fewest skills.
+1) Assign each subtask only to a drone that has the required skill.
+2) Subtasks within a "same_drone_group" MUST be assigned to the same drone, which must have all skills required by that group.
+3) In the same wave, one drone MUST do only one subtask, so DO NOT use one drone more than once in one wave.
+4) If multiple drones qualify, pick the one with the fewest skills.
 
 OUTPUT SCHEMA:
 allocated_subtasks = [

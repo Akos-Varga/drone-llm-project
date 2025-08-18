@@ -54,9 +54,9 @@ m5 = "gpt-4o-mini"
 for task_name, task in tasks_scheduled:
     base = prompt
     messages = [*base, {"role": "user", "content": task}]
-    #print(messages)
+    print(messages)
     print(task_name + "\nTask description: " + task + "\n")
     start_time = time.time()
-    LM(model=m5, messages=messages)
+    LM(model=m3, messages=messages)
     end_time = time.time()
     print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
