@@ -1,6 +1,7 @@
 # from task_decompose_conversation_v2 import messages as prompt
-from scheduler import messages as prompt
-from test_tasks import tasks, tasks_decomposed
+# from scheduler import messages as prompt
+from allocator import messages as prompt
+from test_tasks import tasks, tasks_decomposed, tasks_scheduled
 
 import openai
 import time
@@ -50,12 +51,12 @@ m5 = "gpt-4o-mini"
 
 # Inference --------------------------------------------------------------
 
-for task_name, task in tasks_decomposed:
+for task_name, task in tasks_scheduled:
     base = prompt
     messages = [*base, {"role": "user", "content": task}]
     #print(messages)
     print(task_name + "\nTask description: " + task + "\n")
     start_time = time.time()
-    LM(model=m1, messages=messages)
+    LM(model=m5, messages=messages)
     end_time = time.time()
     print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)

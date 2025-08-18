@@ -33,4 +33,119 @@ tasks_decomposed = [("Task1", '''subtasks = [
 ]''')
         ]
 
-tasks_scheduled = ("Task1",)
+tasks_scheduled = [("Task1", '''{
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2"]
+  ],
+  "waves": [
+    { "name": "Wave1", "subtasks": ["SubTask1"] },
+    { "name": "Wave2", "subtasks": ["SubTask2"] }
+  ],
+  "subtasks": [
+    { "name": "SubTask1", "skill": "PickupPayload",  "object": "SolarPanel1" },
+    { "name": "SubTask2", "skill": "ReleasePayload", "object": "Base" }
+  ]
+}
+'''),
+("Task2", '''{
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2"]
+  ],
+  "waves": [
+    { "name": "Wave1", "subtasks": ["SubTask1"] },
+    { "name": "Wave2", "subtasks": ["SubTask2"] }
+  ],
+  "subtasks": [
+    { "name": "SubTask1", "skill": "CaptureThermalImage", "object": "House2" },
+    { "name": "SubTask2", "skill": "CaptureRGBImage",     "object": "House3" }
+  ]
+}
+'''),
+("Task3", '''{
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2"],
+    ["SubTask3", "SubTask4"]
+  ],
+  "waves": [
+    { "name": "Wave1", "subtasks": ["SubTask1", "SubTask3"] },
+    { "name": "Wave2", "subtasks": ["SubTask2", "SubTask4"] }
+  ],
+  "subtasks": [
+    { "name": "SubTask1", "skill": "PickupPayload",   "object": "House1" },
+    { "name": "SubTask2", "skill": "ReleasePayload",  "object": "Tower" },
+    { "name": "SubTask3", "skill": "CaptureRGBImage", "object": "SolarPanel1" },
+    { "name": "SubTask4", "skill": "CaptureRGBImage", "object": "SolarPanel2" }
+  ]
+}
+'''),
+("Task4", '''{
+  "same_drone_groups": [
+    ["SubTask3", "SubTask4", "SubTask5"]
+  ],
+  "waves": [
+    { "name": "Wave1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"] },
+    { "name": "Wave2", "subtasks": ["SubTask4"] },
+    { "name": "Wave3", "subtasks": ["SubTask5"] }
+  ],
+  "subtasks": [
+    { "name": "SubTask1", "skill": "CaptureThermalImage", "object": "SolarPanel1" },
+    { "name": "SubTask2", "skill": "CaptureThermalImage", "object": "SolarPanel2" },
+    { "name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1" },
+    { "name": "SubTask4", "skill": "CaptureThermalImage", "object": "House2" },
+    { "name": "SubTask5", "skill": "CaptureThermalImage", "object": "House3" }
+  ]
+}
+'''),
+("Task5", '''{
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2", "SubTask3"]
+  ],
+  "waves": [
+    { "name": "Wave1", "subtasks": ["SubTask1"] },
+    { "name": "Wave2", "subtasks": ["SubTask2"] },
+    { "name": "Wave3", "subtasks": ["SubTask3"] }
+  ],
+  "subtasks": [
+    { "name": "SubTask1", "skill": "CaptureRGBImage", "object": "Tower" },
+    { "name": "SubTask2", "skill": "PickupPayload",   "object": "Tower" },
+    { "name": "SubTask3", "skill": "ReleasePayload",  "object": "House2" }
+  ]
+}
+''')
+]
+
+tasks_allocated = [
+    ("Task1", '''allocated_subtasks = [
+    {"name": "SubTask1", "drone": "Drone5"},
+    {"name": "SubTask2", "drone": "Drone5"}
+  ]
+}
+'''),
+    ("Task2", '''allocated_subtasks = [
+    {"name": "SubTask1", "drone": "Drone7"},
+    {"name": "SubTask2", "drone": "Drone7"}
+  ]
+}
+'''),
+    ("Task3", '''allocated_subtasks = [
+    {"name": "SubTask1", "drone": "Drone5"},
+    {"name": "SubTask2", "drone": "Drone5"},
+    {"name": "SubTask3", "drone": "Drone1"},
+    {"name": "SubTask4", "drone": "Drone1"}
+  ]
+}
+'''),
+    ("Task4", '''allocated_subtasks = [
+    {"name": "SubTask1", "drone": "Drone4"},
+    {"name": "SubTask2", "drone": "Drone6"},
+    {"name": "SubTask3", "drone": "Drone3"},
+    {"name": "SubTask4", "drone": "Drone3"},
+    {"name": "SubTask5", "drone": "Drone3"}
+  ]
+}
+'''),
+    ("Task5", '''allocated_subtasks = [
+    {"name": "SubTask1", "drone": "Drone5"},
+    {"name": "SubTask2", "drone": "Drone5"},
+    {"name": "SubTask3", "drone": "Drone5"},''')
+]

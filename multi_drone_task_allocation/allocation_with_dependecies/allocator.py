@@ -6,8 +6,8 @@ Available drones and their skills:
   "Drone2": ["CaptureRGBImage"],
   "Drone3": ["CaptureThermalImage"],
   "Drone4": ["CaptureThermalImage"],
-  "Drone5": ["PickupPayload", "ReleasePayload"],
-  "Drone6": ["CaptureThermalImage"],
+  "Drone5": ["CaptureRGBImage", "PickupPayload", "ReleasePayload"],
+  "Drone6": ["PickupPayload", "ReleasePayload"],
   "Drone7": ["CaptureRGBImage", "CaptureThermalImage"],
   "Drone8": ["CaptureRGBImage"]
 }
@@ -17,9 +17,7 @@ INPUT JSON includes:
 - "waves": [ { "name": "<WaveName>", "subtasks": ["<SubTaskName>", ...] }, ... ]
 - "subtasks": [ {"name": "<SubTaskName>": { "skill": "<Skill>", "object": "<ObjectName>" }, ... }]
 
-OUTPUT a SINGLE valid JSON object assigning subtasks to drones, following these rules:
-
-HARD CONSTRAINTS
+CONSTRAINTS
 1) Skill match: Assign each subtask only to a drone that has the required skill.
 2) Same-drone groups: Subtasks in the same group must use the same drone, which must have all skills required by that group.
 3) Per-wave exclusivity: In the same wave, one drone may do only one subtask.
