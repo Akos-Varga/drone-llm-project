@@ -15,7 +15,7 @@ Output format (exactly this structure + brief comments, no extra prose):
 # DEPENDENCIES
 # <brief reasoning lines>
 subtasks = [
-    {{'name': 'SubTask1', 'object': '<LocationName>', 'skill': '<SkillName>', 'depends_on': <'SubTaskX' or None>, 'same_drone_as': <'SubTaskX' or None>}},
+    {'name': 'SubTask1', 'object': '<LocationName>', 'skill': '<SkillName>', 'depends_on': <'SubTaskX' or None>, 'same_drone_as': <'SubTaskX' or None>},
     ...
 ]
 

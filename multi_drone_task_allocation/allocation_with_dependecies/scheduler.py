@@ -6,22 +6,25 @@ subtasks = [
     ...
 ]
              
-Return only JSON of the form:
+Return ONLY:
 schedule = {
-  "waves": [
-    {"name": "Wave1", "subtasks": ["SubTask...","SubTask..."]},
-    {"name": "Wave2", "subtasks": ["SubTask..."]}
-  ],
   "same_drone_groups": [
     ["SubTaskA", "SubTaskB", ...],
     ...
+  ],
+  "waves": [
+    {"name": "Wave1", "subtasks": ["SubTask...","SubTask..."]},
+    {"name": "Wave2", "subtasks": ["SubTask..."]}
   ]
 }
 
 Rules:
-1) A task can be scheduled only after all its depends_on tasks' waves.
-2) For any same_drone group without order, tasks must be in different waves with the group's anchor first.
-3) Minimize number of waves.
+1) Build same_drone_groups by collecting tasks connected via same_drone_as.
+2) A subtask may appear only in a wave strictly AFTER all of its depends_on tasks’ waves.
+3) In each wave, include at most ONE subtask from any same_drone_group (one drone cannot do two tasks at once).
+4) Assign each task to the EARLIEST wave that satisfies all rules
+5) Schedule as many tasks in the same wave as allowed by the rules.
+6) Minimize the total number of waves.
 """},
 
 # Example 1 ------------------------------------------------------------------------------------------
@@ -34,12 +37,12 @@ subtasks = [
 
 {'role': 'assistant', 'content': '''
 schedule = {
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2"]
+  ], 
   "waves": [
     {"name": "Wave1", "subtasks": ["SubTask1", "SubTask3"]},
     {"name": "Wave2", "subtasks": ["SubTask2"]}
-  ],
-  "same_drone_groups": [
-    ["SubTask1", "SubTask2"]
   ]
 }'''},
 
@@ -51,12 +54,12 @@ subtasks = [
 ]'''},
 {'role': 'assistant', 'content': '''
 schedule = {
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2"]
+  ], 
   "waves": [
     {"name": "Wave1", "subtasks": ["SubTask1"]},
     {"name": "Wave2", "subtasks": ["SubTask2"]}
-  ],
-  "same_drone_groups": [
-    ["SubTask1", "SubTask2"]
   ]
 }'''},
 
@@ -69,13 +72,13 @@ schedule = {
   ]'''},
 {'role': 'assistant', 'content': '''
 schedule = {
+  "same_drone_groups": [
+    ["SubTask1", "SubTask2", "SubTask3"]
+  ], 
   "waves": [
     {"name": "Wave1", "subtasks": ["SubTask1"]},
     {"name": "Wave2", "subtasks": ["SubTask2"]},
     {"name": "Wave3", "subtasks": ["SubTask3"]}
-  ],
-  "same_drone_groups": [
-    ["SubTask1", "SubTask2", "SubTask3"]
   ]
 }'''},
 
@@ -87,11 +90,11 @@ subtasks = [
 ]'''},
 {'role': 'assistant', 'content': '''
 schedule = {
+  "same_drone_groups": [],
   "waves": [
     {"name": "Wave1", "subtasks": ["SubTask1"]},
     {"name": "Wave2", "subtasks": ["SubTask2"]}
-  ],
-  "same_drone_groups": []
+  ]
 }'''},
 
 # Example 5 --------------------------------------------------------------------------------------------
@@ -104,13 +107,13 @@ subtasks = [
 ]'''},
 {'role': 'assistant', 'content': '''
 schedule = {
-  "waves": [
-    {"name": "Wave1", "subtasks": ["SubTask1", "SubTask3"]},
-    {"name": "Wave2", "subtasks": ["SubTask2", "SubTask4"]}
-  ],
   "same_drone_groups": [
     ["SubTask1", "SubTask2"],
     ["SubTask3", "SubTask4"]
+  ], 
+  "waves": [
+    {"name": "Wave1", "subtasks": ["SubTask1", "SubTask3"]},
+    {"name": "Wave2", "subtasks": ["SubTask2", "SubTask4"]}
   ]
 }'''},
 ]

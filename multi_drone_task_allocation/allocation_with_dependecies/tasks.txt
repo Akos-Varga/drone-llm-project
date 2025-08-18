@@ -1,8 +1,8 @@
-Take RGB images of RoofTop1 and RoofTop2 with the same drone.
+Take RGB images of RoofTop1 and RoofTop2 with the same drone. Take thermal image of House1.
 Pick up a payload from House2 and deliver it to House3.
 Take an RGB image of each house in the order of House2, House3, House1 with the same drone.
 Take a thermal image of Tower then take an RGB image of it.
-Deliver a payload from RoofTop1 to House2. Also take thermal images of SolarPanel1 and SolarPanel2 with the same drone.
+Deliver a payload from RoofTop1 to House2. Take thermal images of SolarPanel1 and SolarPanel2 with the same drone.
 
 Test ---------------------------------------------------------------------------------------------------------------------------
 

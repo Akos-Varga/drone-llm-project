@@ -32,3 +32,5 @@ tasks_decomposed = [("Task1", '''subtasks = [
     {'name': 'SubTask3', 'object': 'House2', 'skill': 'ReleasePayload', 'depends_on': 'SubTask2', 'same_drone_as': 'SubTask2'}
 ]''')
         ]
+
+tasks_scheduled = ("Task1",)
