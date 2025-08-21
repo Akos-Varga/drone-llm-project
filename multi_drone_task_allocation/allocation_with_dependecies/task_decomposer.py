@@ -1,5 +1,3 @@
-# Version 2 includes output format and definition of depends_on and same_drones_as properties
-
 ACTIONS = ["Takeoff", "Land", "CaptureRGBImage", "CaptureThermalImage", "PickupPayload", "ReleasePayload"]
 LOCATIONS = ["Base", "RoofTop1", "RoofTop2", "SolarPanel1", "SolarPanel2", "House1", "House2", "House3", "Tower"]
 
@@ -15,7 +13,7 @@ Output format (exactly this structure + brief comments, no extra prose):
 # DEPENDENCIES
 # <brief reasoning lines>
 subtasks = [
-    {'name': 'SubTask1', 'object': '<LocationName>', 'skill': '<SkillName>', 'depends_on': <'SubTaskX' or None>, 'same_drone_as': <'SubTaskX' or None>},
+    {{'name': 'SubTask1', 'object': '<LocationName>', 'skill': '<SkillName>', 'depends_on': <'SubTaskX' or None>, 'same_drone_as': <'SubTaskX' or None>}},
     ...
 ]
 

@@ -1,6 +1,6 @@
-# from task_decompose_conversation_v2 import messages as prompt
+# from task_decomposer import messages as prompt
 # from scheduler import messages as prompt
-from allocator import messages as prompt
+from allocator_with_explanations import messages as prompt
 from test_tasks import tasks, tasks_decomposed, tasks_scheduled
 
 import openai
@@ -54,7 +54,7 @@ m5 = "gpt-4o-mini"
 for task_name, task in tasks_scheduled:
     base = prompt
     messages = [*base, {"role": "user", "content": task}]
-    print(messages)
+    # print(messages)
     print(task_name + "\nTask description: " + task + "\n")
     start_time = time.time()
     LM(model=m3, messages=messages)
