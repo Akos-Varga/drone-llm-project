@@ -35,7 +35,7 @@ tasks_decomposed = [("Task1", '''subtasks = [
 
 tasks_scheduled = [("Task1", '''{
   "same_drone_groups": [
-    ["SubTask1", "SubTask2"]
+    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"] }
   ],
   "waves": [
     { "name": "Wave1", "subtasks": ["SubTask1"] },
@@ -49,7 +49,7 @@ tasks_scheduled = [("Task1", '''{
 '''),
 ("Task2", '''{
   "same_drone_groups": [
-    ["SubTask1", "SubTask2"]
+    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"] }
   ],
   "waves": [
     { "name": "Wave1", "subtasks": ["SubTask1"] },
@@ -63,8 +63,8 @@ tasks_scheduled = [("Task1", '''{
 '''),
 ("Task3", '''{
   "same_drone_groups": [
-    ["SubTask1", "SubTask2"],
-    ["SubTask3", "SubTask4"]
+    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"] },
+    { "name": "Group2", "subtasks": ["SubTask3", "SubTask4"] }
   ],
   "waves": [
     { "name": "Wave1", "subtasks": ["SubTask1", "SubTask3"] },
@@ -80,7 +80,7 @@ tasks_scheduled = [("Task1", '''{
 '''),
 ("Task4", '''{
   "same_drone_groups": [
-    ["SubTask3", "SubTask4", "SubTask5"]
+    { "name": "Group1", "subtasks": ["SubTask3", "SubTask4", "SubTask5"] }
   ],
   "waves": [
     { "name": "Wave1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"] },
@@ -98,7 +98,7 @@ tasks_scheduled = [("Task1", '''{
 '''),
 ("Task5", '''{
   "same_drone_groups": [
-    ["SubTask1", "SubTask2", "SubTask3"]
+    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"] }
   ],
   "waves": [
     { "name": "Wave1", "subtasks": ["SubTask1"] },
