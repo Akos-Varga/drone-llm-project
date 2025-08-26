@@ -92,7 +92,7 @@ tasks_scheduled = [("Task1", '''{
     { "name": "SubTask2", "skill": "CaptureThermalImage", "object": "SolarPanel2" },
     { "name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1" },
     { "name": "SubTask4", "skill": "CaptureThermalImage", "object": "House2" },
-    { "name": "SubTask5", "skill": "CaptureThermalImage", "object": "House3" }
+    { "name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3" }
   ]
 }
 '''),
@@ -112,40 +112,4 @@ tasks_scheduled = [("Task1", '''{
   ]
 }
 ''')
-]
-
-tasks_allocated = [
-    ("Task1", '''allocated_subtasks = [
-    {"name": "SubTask1", "drone": "Drone5"},
-    {"name": "SubTask2", "drone": "Drone5"}
-  ]
-}
-'''),
-    ("Task2", '''allocated_subtasks = [
-    {"name": "SubTask1", "drone": "Drone7"},
-    {"name": "SubTask2", "drone": "Drone7"}
-  ]
-}
-'''),
-    ("Task3", '''allocated_subtasks = [
-    {"name": "SubTask1", "drone": "Drone5"},
-    {"name": "SubTask2", "drone": "Drone5"},
-    {"name": "SubTask3", "drone": "Drone1"},
-    {"name": "SubTask4", "drone": "Drone1"}
-  ]
-}
-'''),
-    ("Task4", '''allocated_subtasks = [
-    {"name": "SubTask1", "drone": "Drone4"},
-    {"name": "SubTask2", "drone": "Drone6"},
-    {"name": "SubTask3", "drone": "Drone3"},
-    {"name": "SubTask4", "drone": "Drone3"},
-    {"name": "SubTask5", "drone": "Drone3"}
-  ]
-}
-'''),
-    ("Task5", '''allocated_subtasks = [
-    {"name": "SubTask1", "drone": "Drone5"},
-    {"name": "SubTask2", "drone": "Drone5"},
-    {"name": "SubTask3", "drone": "Drone5"},''')
 ]

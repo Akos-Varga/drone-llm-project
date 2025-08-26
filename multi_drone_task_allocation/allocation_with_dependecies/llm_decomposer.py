@@ -1,6 +1,6 @@
 # from task_decomposer import messages as prompt
 # from scheduler import messages as prompt
-from allocator_v4 import messages as prompt
+from allocator import messages as prompt
 from test_tasks import tasks, tasks_decomposed, tasks_scheduled
 
 import openai
@@ -57,6 +57,6 @@ for task_name, task in tasks_scheduled:
     # print(messages)
     print(task_name + "\nTask description: " + task + "\n")
     start_time = time.time()
-    LM(model=m5, messages=messages)
+    LM(model=m1, messages=messages)
     end_time = time.time()
     print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)

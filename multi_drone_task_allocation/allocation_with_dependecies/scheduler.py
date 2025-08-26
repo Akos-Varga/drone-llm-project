@@ -31,14 +31,14 @@ Rules:
 {'role':'user', 'content': '''
 subtasks = [
     {'name': 'SubTask1', 'object': 'RoofTop1', 'skill': 'CaptureRGBImage', 'depends_on': None, 'same_drone_as': None},
-    {'name': 'SubTask2', 'object': 'RoofTop2', 'skill': 'CaptureRGBImage', 'depends_on': None, 'same_drone_as': 'SubTask1'},
+    {'name': 'SubTask2', 'object': 'RoofTop2', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': 'SubTask1'},
     {'name': 'SubTask3', 'object': 'House1', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': None}
 ]'''},
 
 {'role': 'assistant', 'content': '''
 schedule = {
   "same_drone_groups": [
-    ["SubTask1", "SubTask2"]
+    { "name": "Group1", ["SubTask1", "SubTask2"] }
   ], 
   "waves": [
     {"name": "Wave1", "subtasks": ["SubTask1", "SubTask3"]},
@@ -55,7 +55,7 @@ subtasks = [
 {'role': 'assistant', 'content': '''
 schedule = {
   "same_drone_groups": [
-    ["SubTask1", "SubTask2"]
+    { "name": "Group1", ["SubTask1", "SubTask2"] }
   ], 
   "waves": [
     {"name": "Wave1", "subtasks": ["SubTask1"]},
@@ -73,7 +73,7 @@ schedule = {
 {'role': 'assistant', 'content': '''
 schedule = {
   "same_drone_groups": [
-    ["SubTask1", "SubTask2", "SubTask3"]
+    { "name": "Group1", ["SubTask1", "SubTask2", "SubTask3"] }
   ], 
   "waves": [
     {"name": "Wave1", "subtasks": ["SubTask1"]},
@@ -108,8 +108,8 @@ subtasks = [
 {'role': 'assistant', 'content': '''
 schedule = {
   "same_drone_groups": [
-    ["SubTask1", "SubTask2"],
-    ["SubTask3", "SubTask4"]
+    { "name": "Group1", ["SubTask1", "SubTask2"] },
+    { "name": "Group2", ["SubTask3", "SubTask4"] }
   ], 
   "waves": [
     {"name": "Wave1", "subtasks": ["SubTask1", "SubTask3"]},

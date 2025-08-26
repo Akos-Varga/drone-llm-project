@@ -30,9 +30,9 @@ RULES
 },
 
 # Example 1 ------------------------------------------------------------------------------------------
-{'role': 'user', 'content': "Take RGB images of RoofTop1 and RoofTop2 with the same drone. Take thermal image of House1."},
+{'role': 'user', 'content': "Take RGB image of RoofTop1 and thermal image of RoofTop2 with the same drone. Take thermal image of House1."},
 {'role': 'assistant', 'content': '''# SubTask1: Take RGB image of RoofTop1
-# SubTask2: Take RGB image of RoofTop2
+# SubTask2: Take thermal image of RoofTop2
 # SubTask3: Take thermal image of House1
 
 # DEPENDENCIES
@@ -42,7 +42,7 @@ RULES
 
 subtasks = [
     {'name': 'SubTask1', 'object': 'RoofTop1', 'skill': 'CaptureRGBImage', 'depends_on': None, 'same_drone_as': None},
-    {'name': 'SubTask2', 'object': 'RoofTop2', 'skill': 'CaptureRGBImage', 'depends_on': None, 'same_drone_as': 'SubTask1'},
+    {'name': 'SubTask2', 'object': 'RoofTop2', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': 'SubTask1'},
     {'name': 'SubTask3', 'object': 'House1', 'skill': 'CaptureThermalImage', 'depends_on': None, 'same_drone_as': None}
 ]'''},
 
