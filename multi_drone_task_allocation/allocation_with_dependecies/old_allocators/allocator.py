@@ -1,7 +1,7 @@
 messages = [{'role': 'system', "content": '''You are a task allocator for a multi-drone system.
              
 INPUT includes:
-- "same_drone_groups": [ { "name": "<GroupName>", "subtasks": ["<SubTaskName>", ...], "skills": ["<SkillName>", ...] }, ... ]
+- "same_drone_groups": [ { "name": "<GroupName>", "subtasks": ["<SubTaskName>", ...] }, ... ]
 - "waves": [ { "name": "<WaveName>", "subtasks": ["<SubTaskName>", ...] }, ... ]
 - "subtasks": [ {"name": "<SubTaskName>", "skill": "<Skill>", "object": "<ObjectName>" }, ... ]
 
@@ -36,7 +36,7 @@ allocated_subtasks = [
 {'role':'user', 'content': '''
 {
   "same_drone_groups": [
-    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["CaptureRGBImage", "CaptureThermalImage"] }
+    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"] }
   ],
   "waves": [
     { "name": "Wave1", "subtasks": ["SubTask1", "SubTask3"] },
@@ -63,7 +63,7 @@ allocated_subtasks = [
 {'role':'user', 'content': '''
   {
   "same_drone_groups": [
-    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload] }
+    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"]}
   ],
   "waves": [
     { "name": "Wave1", "subtasks": ["SubTask1"] },
@@ -88,7 +88,7 @@ allocated_subtasks = [
 {'role':'user', 'content': '''
 {
   "same_drone_groups": [
-    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"], "skills": [CaptureRGBImage] }
+    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"]}
   ],
   "waves": [
     { "name": "Wave1", "subtasks": ["SubTask1"] },
@@ -142,8 +142,8 @@ allocated_subtasks = [
 {'role':'user', 'content': '''
 {
   "same_drone_groups": [
-    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload] },
-    { "name": "Group2", "subtasks": ["SubTask3", "SubTask4"], "skills": [CaptureThermalImage] }
+    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"]},
+    { "name": "Group2", "subtasks": ["SubTask3", "SubTask4"]}
   ],
   "waves": [
     { "name": "Wave1", "subtasks": ["SubTask1", "SubTask3"] },
