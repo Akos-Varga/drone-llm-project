@@ -14,6 +14,7 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key = api_key)
 
+# LM Inference
 def LM(model, messages):
     if("gpt" in model):
             response = client.chat.completions.create(
@@ -40,8 +41,18 @@ def LM(model, messages):
             output += content
         return output
 
+# Message builder
 def build_message(prompt, content):
      return [*prompt, {"role": "user", "content": content}]
+
+# Formatting functions ---------------------------------------------------
+def format_decomposed(decomposer_output):
+     lines = decomposer_output.splitlines(keepends = True)
+     return "".join(line for line in lines if not line.lstrip().startswith("#") and line.strip())
+
+# CONTINUE FROM HERE
+def format_scheduled(scheduler_output):
+     return 0
 
 # Models -----------------------------------------------------------------
 
@@ -56,24 +67,26 @@ user_task = tasks["Task1"]
 model = m5
 
 ## Decomposer
-decomposer_message = build_message(decomposer_prompt, user_task) # [*decomposer_prompt, {"role": "user", "content": user_task}]
-print(decomposer_message)
+decomposer_message = build_message(decomposer_prompt, user_task)
+# print(decomposer_message)
 start_time = time.time()
 decomposed_task = LM(model=model, messages=decomposer_message)
 end_time = time.time()
 print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
 ## Scheduler
-scheduler_message = build_message(scheduler_prompt, decomposed_task) # [*scheduler_prompt, {"role": "user", "content": decomposed_task}]
-print(scheduler_message)
+cleaned_decomposed_task = format_decomposed(decomposed_task)
+print(cleaned_decomposed_task)
+scheduler_message = build_message(scheduler_prompt, cleaned_decomposed_task)
+# print(scheduler_message)
 start_time = time.time()
 scheduled_task = LM(model=model, messages=scheduler_message)
 end_time = time.time()
 print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
 ## Allocator
-allocator_message = build_message(allocator_prompt,scheduled_task) # [*allocator_prompt, {"role": "user", "content": scheduled_task}]
-print(allocator_message)
+allocator_message = build_message(allocator_prompt,scheduled_task)
+# print(allocator_message)
 start_time = time.time()
 allocated_task = LM(model=model, messages=allocator_message)
 end_time = time.time()
