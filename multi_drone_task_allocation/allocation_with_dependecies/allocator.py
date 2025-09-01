@@ -1,17 +1,20 @@
 messages = [{'role': 'system', "content": '''You are a task allocator for a multi-drone system.
              
-INPUT includes:
-- "same_drone_groups": [ { "name": "<GroupName>", "subtasks": ["<SubTaskName>", ...], "skills": ["<SkillName>", ...] }, ... ]
-- "waves": [ { "name": "<WaveName>", "subtasks": ["<SubTaskName>", ...] }, ... ]
-- "subtasks": [ {"name": "<SubTaskName>", "skill": "<Skill>", "object": "<ObjectName>" }, ... ]
+INPUT FORMAT:
+schedule = {
+  "same_drone_groups": [ { "name": "<GroupName>", "subtasks": ["<SubTaskName>", ...], "skills": ["<SkillName>", ...] }, ... ],
+  "rounds": [ { "name": "<RoundName>", "subtasks": ["<SubTaskName>", ...] }, ... ],
+  "subtasks": [ {"name": "<SubTaskName>", "skill": "<Skill>", "object": "<ObjectName>" }, ... ]
+  }
 
-CONSTRAINTS
+
+CONSTRAINTS:
 1) Assign each subtask only to a drone that has the required skill.
 2) Subtasks within a "same_drone_group" MUST be assigned to the same drone, which must have all skills required by that group.
-3) In the same wave, one drone MUST do only one subtask, so DO NOT use one drone more than once in one wave.
+3) In the same round, one drone MUST do only one subtask, so DO NOT use one drone more than once in one round.
 4) If multiple drones qualify, choose the one with the fewest skills. If several drones tie for the fewest skills, select the drone with the smallest ID.
 5) For every allocated subtask, provide a single-line explanation in arrow format:
-   SubTaskX → [group/wave constraints] + [skill requirement] → [chosen drone & reason].
+   SubTaskX → [group/round constraints] + [skill requirement] → [chosen drone & reason].
                        
 Available drones and their skills:
 {
@@ -25,7 +28,7 @@ Available drones and their skills:
   "Drone8": ["CaptureRGBImage"]
 }
 
-OUTPUT SCHEMA:
+OUTPUT FORMAT:
 allocated_subtasks = [
              {"name": "SubTaskA", "drone": "DroneB"},
              ...
@@ -34,13 +37,13 @@ allocated_subtasks = [
 
 # Example 1 ------------------------------------------------------------------------------------------
 {'role':'user', 'content': '''
-{
+schedule = {
   "same_drone_groups": [
     { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["CaptureRGBImage", "CaptureThermalImage"] }
   ],
-  "waves": [
-    { "name": "Wave1", "subtasks": ["SubTask1", "SubTask3"] },
-    { "name": "Wave2", "subtasks": ["SubTask2"] }
+  "rounds": [
+    { "name": "Round1", "subtasks": ["SubTask1", "SubTask3"] },
+    { "name": "Round2", "subtasks": ["SubTask2"] }
   ],
   "subtasks": [
     { "name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1" },
@@ -51,7 +54,7 @@ allocated_subtasks = [
 {'role':'assistant', 'content': '''
 # SubTask1 → Group1, union of skills in group: [CaptureRGBImage, CaptureThermalImage] → assigned to Drone7 (only drone with all required skills)
 # SubTask2 → Group1 (same as SubTask1) → assigned to Drone7
-# SubTask3 → No group, same wave as SubTask1 so must use different drone, requires CaptureThermalImage → assigned to Drone3 (fewest skills)
+# SubTask3 → No group, same round as SubTask1 so must use different drone, requires CaptureThermalImage → assigned to Drone3 (fewest skills)
 
 allocated_subtasks = [
  {"name": "SubTask1", "drone": "Drone7"},
@@ -61,13 +64,13 @@ allocated_subtasks = [
 
 # Example 2 ------------------------------------------------------------------------------------------
 {'role':'user', 'content': '''
-  {
+schedule = {
   "same_drone_groups": [
     { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload] }
   ],
-  "waves": [
-    { "name": "Wave1", "subtasks": ["SubTask1"] },
-    { "name": "Wave2", "subtasks": ["SubTask2"] }
+  "rounds": [
+    { "name": "Round1", "subtasks": ["SubTask1"] },
+    { "name": "Round2", "subtasks": ["SubTask2"] }
   ],
   "subtasks": [
     { "name": "SubTask1", "skill": "PickupPayload", "object": "House2" },
@@ -86,14 +89,14 @@ allocated_subtasks = [
 
 # Example 3 ------------------------------------------------------------------------------------------
 {'role':'user', 'content': '''
-{
+schedule = {
   "same_drone_groups": [
     { "name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"], "skills": [CaptureRGBImage] }
   ],
-  "waves": [
-    { "name": "Wave1", "subtasks": ["SubTask1"] },
-    { "name": "Wave2", "subtasks": ["SubTask2"] },
-    { "name": "Wave3", "subtasks": ["SubTask3"] }
+  "rounds": [
+    { "name": "Round1", "subtasks": ["SubTask1"] },
+    { "name": "Round2", "subtasks": ["SubTask2"] },
+    { "name": "Round3", "subtasks": ["SubTask3"] }
   ],
   "subtasks": [
     {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House2" },
@@ -116,11 +119,11 @@ allocated_subtasks = [
 
 # Example 4 ------------------------------------------------------------------------------------------
 {'role':'user', 'content': '''
-{
+schedule = {
   "same_drone_groups": [],
-  "waves": [
-    { "name": "Wave1", "subtasks": ["SubTask1"] },
-    { "name": "Wave2", "subtasks": ["SubTask2"] }
+  "rounds": [
+    { "name": "Round1", "subtasks": ["SubTask1"] },
+    { "name": "Round2", "subtasks": ["SubTask2"] }
   ],
   "subtasks": [
     {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower" },
@@ -140,14 +143,14 @@ allocated_subtasks = [
 
 # Example 5 ------------------------------------------------------------------------------------------
 {'role':'user', 'content': '''
-{
+schedule = {
   "same_drone_groups": [
     { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload] },
     { "name": "Group2", "subtasks": ["SubTask3", "SubTask4"], "skills": [CaptureThermalImage] }
   ],
-  "waves": [
-    { "name": "Wave1", "subtasks": ["SubTask1", "SubTask3"] },
-    { "name": "Wave2", "subtasks": ["SubTask2", "SubTask4"] }
+  "rounds": [
+    { "name": "Round1", "subtasks": ["SubTask1", "SubTask3"] },
+    { "name": "Round2", "subtasks": ["SubTask2", "SubTask4"] }
   ],
   "subtasks": [
     {"name": "SubTask1", "skill": "PickupPayload",        "object": "RoofTop1" },
@@ -160,7 +163,7 @@ allocated_subtasks = [
 {'role':'assistant', 'content': '''
 # SubTask1 → Group1, union of skills in group: [PickupPayload, ReleasePayload] → assigned to Drone6 (fewest skills with both)
 # SubTask2 → Group1 (same as SubTask1) → assigned to Drone6
-# SubTask3 → Group2, same wave as SubTask1 so must use different drone, union of skills in group: [CaptureThermalImage] → assigned to Drone3 (fewest skills)
+# SubTask3 → Group2, same round as SubTask1 so must use different drone, union of skills in group: [CaptureThermalImage] → assigned to Drone3 (fewest skills)
 # SubTask4 → Group2 (same as SubTask3) → assigned to Drone3
 
 allocated_subtasks = [

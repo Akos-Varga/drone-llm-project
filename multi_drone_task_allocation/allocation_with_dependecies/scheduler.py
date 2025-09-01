@@ -1,30 +1,30 @@
-messages = [{'role': 'system', "content": """"You build parallel "waves" from given list of subtasks.
+messages = [{'role': 'system', "content": """"You build parallel "rounds" from given list of subtasks.
              
-Input:
+INPUT FORMAT:
 subtasks = [
     {{'name': 'SubTask1', 'object': '<LocationName>', 'skill': '<SkillName>', 'depends_on': <'SubTaskX' or None>, 'same_drone_as': <'SubTaskX' or None>}},
     ...
 ]
              
-Return ONLY:
+CONSTRAINTS:
+1) Build same_drone_groups by collecting tasks connected via same_drone_as.
+2) A subtask may appear only in a round strictly AFTER all of its depends_on tasks’ rounds.
+3) In each round, include at most ONE subtask from any same_drone_group (one drone cannot do two tasks at once).
+4) Assign each task to the EARLIEST round that satisfies all rules
+5) Schedule as many tasks in the same round as allowed by the rules.
+6) Minimize the total number of rounds.
+             
+OUTPUT FORMAT:
 schedule = {
   "same_drone_groups": [
     ["SubTaskA", "SubTaskB", ...],
     ...
   ],
-  "waves": [
-    {"name": "Wave1", "subtasks": ["SubTask...","SubTask..."]},
-    {"name": "Wave2", "subtasks": ["SubTask..."]}
+  "rounds": [
+    {"name": "Round1", "subtasks": ["SubTask...","SubTask..."]},
+    {"name": "Round2", "subtasks": ["SubTask..."]}
   ]
 }
-
-Rules:
-1) Build same_drone_groups by collecting tasks connected via same_drone_as.
-2) A subtask may appear only in a wave strictly AFTER all of its depends_on tasks’ waves.
-3) In each wave, include at most ONE subtask from any same_drone_group (one drone cannot do two tasks at once).
-4) Assign each task to the EARLIEST wave that satisfies all rules
-5) Schedule as many tasks in the same wave as allowed by the rules.
-6) Minimize the total number of waves.
 """},
 
 # Example 1 ------------------------------------------------------------------------------------------
@@ -38,11 +38,11 @@ subtasks = [
 {'role': 'assistant', 'content': '''
 schedule = {
   "same_drone_groups": [
-    { "name": "Group1", ["SubTask1", "SubTask2"] }
+    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"] }
   ], 
-  "waves": [
-    {"name": "Wave1", "subtasks": ["SubTask1", "SubTask3"]},
-    {"name": "Wave2", "subtasks": ["SubTask2"]}
+  "rounds": [
+    {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
+    {"name": "Round2", "subtasks": ["SubTask2"]}
   ]
 }'''},
 
@@ -57,9 +57,9 @@ schedule = {
   "same_drone_groups": [
     { "name": "Group1", ["SubTask1", "SubTask2"] }
   ], 
-  "waves": [
-    {"name": "Wave1", "subtasks": ["SubTask1"]},
-    {"name": "Wave2", "subtasks": ["SubTask2"]}
+  "rounds": [
+    {"name": "Round1", "subtasks": ["SubTask1"]},
+    {"name": "Round2", "subtasks": ["SubTask2"]}
   ]
 }'''},
 
@@ -75,10 +75,10 @@ schedule = {
   "same_drone_groups": [
     { "name": "Group1", ["SubTask1", "SubTask2", "SubTask3"] }
   ], 
-  "waves": [
-    {"name": "Wave1", "subtasks": ["SubTask1"]},
-    {"name": "Wave2", "subtasks": ["SubTask2"]},
-    {"name": "Wave3", "subtasks": ["SubTask3"]}
+  "rounds": [
+    {"name": "Round1", "subtasks": ["SubTask1"]},
+    {"name": "Round2", "subtasks": ["SubTask2"]},
+    {"name": "Round3", "subtasks": ["SubTask3"]}
   ]
 }'''},
 
@@ -91,9 +91,9 @@ subtasks = [
 {'role': 'assistant', 'content': '''
 schedule = {
   "same_drone_groups": [],
-  "waves": [
-    {"name": "Wave1", "subtasks": ["SubTask1"]},
-    {"name": "Wave2", "subtasks": ["SubTask2"]}
+  "rounds": [
+    {"name": "Round1", "subtasks": ["SubTask1"]},
+    {"name": "Round2", "subtasks": ["SubTask2"]}
   ]
 }'''},
 
@@ -111,9 +111,9 @@ schedule = {
     { "name": "Group1", ["SubTask1", "SubTask2"] },
     { "name": "Group2", ["SubTask3", "SubTask4"] }
   ], 
-  "waves": [
-    {"name": "Wave1", "subtasks": ["SubTask1", "SubTask3"]},
-    {"name": "Wave2", "subtasks": ["SubTask2", "SubTask4"]}
+  "rounds": [
+    {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
+    {"name": "Round2", "subtasks": ["SubTask2", "SubTask4"]}
   ]
 }'''},
 ]
