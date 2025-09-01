@@ -15,7 +15,6 @@ api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key = api_key)
 
 def LM(model, messages):
-
     if("gpt" in model):
             response = client.chat.completions.create(
                 model=model,
@@ -41,6 +40,9 @@ def LM(model, messages):
             output += content
         return output
 
+def build_message(prompt, content):
+     return [*prompt, {"role": "user", "content": content}]
+
 # Models -----------------------------------------------------------------
 
 m1 = "qwen2.5-coder:1.5b"
@@ -54,7 +56,7 @@ user_task = tasks["Task1"]
 model = m5
 
 ## Decomposer
-decomposer_message = [*decomposer_prompt, {"role": "user", "content": user_task}]
+decomposer_message = build_message(decomposer_prompt, user_task) # [*decomposer_prompt, {"role": "user", "content": user_task}]
 print(decomposer_message)
 start_time = time.time()
 decomposed_task = LM(model=model, messages=decomposer_message)
@@ -62,7 +64,7 @@ end_time = time.time()
 print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
 ## Scheduler
-scheduler_message = [*scheduler_prompt, {"role": "user", "content": decomposed_task}]
+scheduler_message = build_message(scheduler_prompt, decomposed_task) # [*scheduler_prompt, {"role": "user", "content": decomposed_task}]
 print(scheduler_message)
 start_time = time.time()
 scheduled_task = LM(model=model, messages=scheduler_message)
@@ -70,10 +72,9 @@ end_time = time.time()
 print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
 ## Allocator
-allocator_message = [*allocator_prompt, {"role": "user", "content": scheduled_task}]
+allocator_message = build_message(allocator_prompt,scheduled_task) # [*allocator_prompt, {"role": "user", "content": scheduled_task}]
 print(allocator_message)
 start_time = time.time()
 allocated_task = LM(model=model, messages=allocator_message)
 end_time = time.time()
 print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
-
