@@ -16,15 +16,10 @@ CONSTRAINTS:
              
 OUTPUT FORMAT:
 schedule = {
-  "same_drone_groups": [
-    {"name": "<GroupName>", "subtasks": ["<SubTaskName>", ...], "skills": ["<SkillName>", ...]},
-    ...
-  ],
-  "rounds": [
-    {"name": "<RoundName>", "subtasks": ["<SubTaskName>", ...]},
-    ...
-  ]
-}
+  "same_drone_groups": [ {"name": "<GroupName>", "subtasks": ["<SubTaskName>", ...], "skills": ["<SkillName>", ...]}, ... ],
+  "rounds": [ {"name": "<RoundName>", "subtasks": ["<SubTaskName>", ...]}, ... ],
+  "subtasks": [ {"name": "<SubTaskName>", "skill": "<Skill>", "object": "<ObjectName>"}, ... ]
+ }
 """},
 
 # Example 1 ------------------------------------------------------------------------------------------
@@ -38,11 +33,16 @@ subtasks = [
 {"role": "assistant", "content": """
 schedule = {
   "same_drone_groups": [
-    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"] }
+    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["CaptureRGBImage", "CaptureThermalImage"]}
   ], 
   "rounds": [
     {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
     {"name": "Round2", "subtasks": ["SubTask2"]}
+  ],
+  "subtasks": [
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1"},
+    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2"},
+    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1"},
   ]
 }"""},
 
@@ -60,6 +60,10 @@ schedule = {
   "rounds": [
     {"name": "Round1", "subtasks": ["SubTask1"]},
     {"name": "Round2", "subtasks": ["SubTask2"]}
+  ],
+  "subtasks": [
+    { "name": "SubTask1", "skill": "PickupPayload", "object": "House2" },
+    { "name": "SubTask2", "skill": "ReleasePayload", "object": "House3" }
   ]
 }"""},
 
@@ -79,6 +83,11 @@ schedule = {
     {"name": "Round1", "subtasks": ["SubTask1"]},
     {"name": "Round2", "subtasks": ["SubTask2"]},
     {"name": "Round3", "subtasks": ["SubTask3"]}
+  ],
+  "subtasks": [
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House2"},
+    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "House3"}, 
+    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1"}
   ]
 }"""},
 
@@ -94,6 +103,10 @@ schedule = {
   "rounds": [
     {"name": "Round1", "subtasks": ["SubTask1"]},
     {"name": "Round2", "subtasks": ["SubTask2"]}
+  ],
+  "subtasks": [
+    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower"},
+    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower"}
   ]
 }"""},
 
@@ -114,6 +127,12 @@ schedule = {
   "rounds": [
     {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
     {"name": "Round2", "subtasks": ["SubTask2", "SubTask4"]}
+  ],
+  "subtasks": [
+    {"name": "SubTask1", "skill": "PickupPayload", "object": "RoofTop1"},
+    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House2"},
+    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "SolarPanel1"},
+    {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2"}
   ]
 }"""},
 ]

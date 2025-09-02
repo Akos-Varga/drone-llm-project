@@ -2,10 +2,10 @@ messages = [{"role": "system", "content": """You are a task allocator for a mult
              
 INPUT FORMAT:
 schedule = {
-  "same_drone_groups": [ { "name": "<GroupName>", "subtasks": ["<SubTaskName>", ...], "skills": ["<SkillName>", ...] }, ... ],
-  "rounds": [ { "name": "<RoundName>", "subtasks": ["<SubTaskName>", ...] }, ... ],
-  "subtasks": [ {"name": "<SubTaskName>", "skill": "<Skill>", "object": "<ObjectName>" }, ... ]
-  }
+  "same_drone_groups": [ {"name": "<GroupName>", "subtasks": ["<SubTaskName>", ...], "skills": ["<SkillName>", ...]}, ... ],
+  "rounds": [ {"name": "<RoundName>", "subtasks": ["<SubTaskName>", ...]}, ... ],
+  "subtasks": [ {"name": "<SubTaskName>", "skill": "<Skill>", "object": "<ObjectName>"}, ... ]
+ }
 
 
 CONSTRAINTS:
@@ -42,16 +42,16 @@ allocated_subtasks = [
 {"role":"user", "content": """
 schedule = {
   "same_drone_groups": [
-    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["CaptureRGBImage", "CaptureThermalImage"] }
+    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["CaptureRGBImage", "CaptureThermalImage"]}
   ],
   "rounds": [
-    { "name": "Round1", "subtasks": ["SubTask1", "SubTask3"] },
-    { "name": "Round2", "subtasks": ["SubTask2"] }
+    {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
+    {"name": "Round2", "subtasks": ["SubTask2"]}
   ],
   "subtasks": [
-    { "name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1" },
-    { "name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2" },
-    { "name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1" },
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1"},
+    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2"},
+    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1"},
   ]
 }"""},
 {"role":"assistant", "content": """
@@ -69,15 +69,15 @@ allocated_subtasks = [
 {"role":"user", "content": """
 schedule = {
   "same_drone_groups": [
-    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload] }
+    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload]}
   ],
   "rounds": [
-    { "name": "Round1", "subtasks": ["SubTask1"] },
-    { "name": "Round2", "subtasks": ["SubTask2"] }
+    {"name": "Round1", "subtasks": ["SubTask1"]},
+    {"name": "Round2", "subtasks": ["SubTask2"]}
   ],
   "subtasks": [
-    { "name": "SubTask1", "skill": "PickupPayload", "object": "House2" },
-    { "name": "SubTask2", "skill": "ReleasePayload", "object": "House3" }
+    {"name": "SubTask1", "skill": "PickupPayload", "object": "House2"},
+    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House3"}
   ]
 }
 """},
@@ -94,17 +94,17 @@ allocated_subtasks = [
 {"role":"user", "content": """
 schedule = {
   "same_drone_groups": [
-    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"], "skills": [CaptureRGBImage] }
+    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"], "skills": [CaptureRGBImage]}
   ],
   "rounds": [
-    { "name": "Round1", "subtasks": ["SubTask1"] },
-    { "name": "Round2", "subtasks": ["SubTask2"] },
-    { "name": "Round3", "subtasks": ["SubTask3"] }
+    {"name": "Round1", "subtasks": ["SubTask1"]},
+    {"name": "Round2", "subtasks": ["SubTask2"]},
+    {"name": "Round3", "subtasks": ["SubTask3"]}
   ],
   "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House2" },
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "House3" }, 
-    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1" }
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House2"},
+    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "House3"}, 
+    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1"}
   ]
 }
 """},
@@ -125,12 +125,12 @@ allocated_subtasks = [
 schedule = {
   "same_drone_groups": [],
   "rounds": [
-    { "name": "Round1", "subtasks": ["SubTask1"] },
-    { "name": "Round2", "subtasks": ["SubTask2"] }
+    {"name": "Round1", "subtasks": ["SubTask1"]},
+    {"name": "Round2", "subtasks": ["SubTask2"]}
   ],
   "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower" },
-    {"name": "SubTask2", "skill": "CaptureRGBImage",    "object": "Tower" }
+    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower"},
+    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower"}
   ]
 }
 """},
@@ -148,18 +148,18 @@ schedule = {
 {"role":"user", "content": """
 schedule = {
   "same_drone_groups": [
-    { "name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload] },
-    { "name": "Group2", "subtasks": ["SubTask3", "SubTask4"], "skills": [CaptureThermalImage] }
+    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload]},
+    {"name": "Group2", "subtasks": ["SubTask3", "SubTask4"], "skills": [CaptureThermalImage]}
   ],
   "rounds": [
-    { "name": "Round1", "subtasks": ["SubTask1", "SubTask3"] },
-    { "name": "Round2", "subtasks": ["SubTask2", "SubTask4"] }
+    {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
+    {"name": "Round2", "subtasks": ["SubTask2", "SubTask4"]}
   ],
   "subtasks": [
-    {"name": "SubTask1", "skill": "PickupPayload",        "object": "RoofTop1" },
-    {"name": "SubTask2", "skill": "ReleasePayload",       "object": "House2" },
-    {"name": "SubTask3", "skill": "CaptureThermalImage",  "object": "SolarPanel1" },
-    {"name": "SubTask4", "skill": "CaptureThermalImage",  "object": "SolarPanel2" }
+    {"name": "SubTask1", "skill": "PickupPayload", "object": "RoofTop1"},
+    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House2"},
+    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "SolarPanel1"},
+    {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2"}
   ]
 }
 """},
