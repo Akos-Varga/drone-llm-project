@@ -46,13 +46,9 @@ def build_message(prompt, content):
      return [*prompt, {"role": "user", "content": content}]
 
 # Formatting functions ---------------------------------------------------
-def format_decomposed(decomposer_output):
-     lines = decomposer_output.splitlines(keepends = True)
+def remove_comments(commented_text):
+     lines = commented_text.splitlines(keepends = True)
      return "".join(line for line in lines if not line.lstrip().startswith("#") and line.strip())
-
-# CONTINUE FROM HERE
-def format_scheduled(scheduler_output):
-     return 0
 
 # Models -----------------------------------------------------------------
 
@@ -63,31 +59,32 @@ m4 = "qwen2.5-coder:7b"
 m5 = "gpt-4o-mini"
 
 # Inference --------------------------------------------------------------
-user_task = tasks["Task1"]
+user_task = tasks["Task10"]
 model = m5
-
+print("User task: " + user_task)
 ## Decomposer
 decomposer_message = build_message(decomposer_prompt, user_task)
 # print(decomposer_message)
 start_time = time.time()
 decomposed_task = LM(model=model, messages=decomposer_message)
+cleaned_decomposed_task = remove_comments(decomposed_task)
 end_time = time.time()
 print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
 ## Scheduler
-cleaned_decomposed_task = format_decomposed(decomposed_task)
-print(cleaned_decomposed_task)
 scheduler_message = build_message(scheduler_prompt, cleaned_decomposed_task)
 # print(scheduler_message)
 start_time = time.time()
 scheduled_task = LM(model=model, messages=scheduler_message)
+cleaned_scheduled_task = remove_comments(scheduled_task)
 end_time = time.time()
 print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
 ## Allocator
-allocator_message = build_message(allocator_prompt,scheduled_task)
+allocator_message = build_message(allocator_prompt,cleaned_scheduled_task)
 # print(allocator_message)
 start_time = time.time()
 allocated_task = LM(model=model, messages=allocator_message)
+cleaned_allocated_task = remove_comments(allocated_task)
 end_time = time.time()
 print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
