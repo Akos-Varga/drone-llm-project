@@ -1,4 +1,4 @@
-messages = [{"role": "system", "content": """You are a task allocator for a multi-drone system.
+messages = [{"role": "system", "content": """You are a task allocator for a multi-drone system outputting only Python code.
              
 INPUT FORMAT:
 schedule = {
@@ -64,116 +64,116 @@ allocated_subtasks = [
  {"name": "SubTask2", "drone": "Drone7"},
  {"name": "SubTask3", "drone": "Drone3"}
 ]"""},
-
-# Example 2 ------------------------------------------------------------------------------------------
-{"role":"user", "content": """
-schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload]}
-  ],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "PickupPayload", "object": "House2"},
-    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House3"}
-  ]
-}
-"""},
-{"role":"assistant", "content": """
-# SubTask1 → Group1, union of skills in group: [PickupPayload, ReleasePayload] → assigned to Drone6 (fewest skills with both)
-# SubTask2 → Group1 (same as SubTask1) → assigned to Drone6
-
-allocated_subtasks = [
-  {"name": "SubTask1", "drone": "Drone6"},
-  {"name": "SubTask2", "drone": "Drone6"}
-]"""},
-
-# Example 3 ------------------------------------------------------------------------------------------
-{"role":"user", "content": """
-schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"], "skills": [CaptureRGBImage]}
-  ],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]},
-    {"name": "Round3", "subtasks": ["SubTask3"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House2"},
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "House3"}, 
-    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1"}
-  ]
-}
-"""},
-{"role":"assistant", "content": """
-# SubTask1 → Group1, union of skills in group: [CaptureRGBImage] → assigned to Drone1 (fewest skills)
-# SubTask2 → Group1 (same as SubTask1) → assigned to Drone1
-# SubTask3 → Group1 (same as SubTask1) → assigned to Drone1
-
-allocated_subtasks = [
-  {"name": "SubTask1", "drone": "Drone1"},
-  {"name": "SubTask2", "drone": "Drone1"},
-  {"name": "SubTask3", "drone": "Drone1"}
-]
-"""},
-
-# Example 4 ------------------------------------------------------------------------------------------
-{"role":"user", "content": """
-schedule = {
-  "same_drone_groups": [],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower"},
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower"}
-  ]
-}
-"""},
-{"role":"assistant", "content": """
-# SubTask1 → No group, requires CaptureThermalImage → assigned to Drone3 (fewest skills)
-# SubTask2 → No group, requires CaptureRGBImage → assigned to Drone1 (fewest skills)
-
- allocated_subtasks = [
-  {"name": "SubTask1", "drone": "Drone3"},
-  {"name": "SubTask2", "drone": "Drone1"}
-]
-"""},
-
-# Example 5 ------------------------------------------------------------------------------------------
-{"role":"user", "content": """
-schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload]},
-    {"name": "Group2", "subtasks": ["SubTask3", "SubTask4"], "skills": [CaptureThermalImage]}
-  ],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
-    {"name": "Round2", "subtasks": ["SubTask2", "SubTask4"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "PickupPayload", "object": "RoofTop1"},
-    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House2"},
-    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "SolarPanel1"},
-    {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2"}
-  ]
-}
-"""},
-{"role":"assistant", "content": """
-# SubTask1 → Group1, union of skills in group: [PickupPayload, ReleasePayload] → assigned to Drone6 (fewest skills with both)
-# SubTask2 → Group1 (same as SubTask1) → assigned to Drone6
-# SubTask3 → Group2, same round as SubTask1 so must use different drone, union of skills in group: [CaptureThermalImage] → assigned to Drone3 (fewest skills)
-# SubTask4 → Group2 (same as SubTask3) → assigned to Drone3
-
-allocated_subtasks = [
- {"name": "SubTask1", "drone": "Drone6"},
- {"name": "SubTask2", "drone": "Drone6"},
- {"name": "SubTask3", "drone": "Drone3"},
- {"name": "SubTask4", "drone": "Drone3"}
-]
-"""}
+#
+## Example 2 ------------------------------------------------------------------------------------------
+#{"role":"user", "content": """
+#schedule = {
+#  "same_drone_groups": [
+#    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload]}
+#  ],
+#  "rounds": [
+#    {"name": "Round1", "subtasks": ["SubTask1"]},
+#    {"name": "Round2", "subtasks": ["SubTask2"]}
+#  ],
+#  "subtasks": [
+#    {"name": "SubTask1", "skill": "PickupPayload", "object": "House2"},
+#    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House3"}
+#  ]
+#}
+#"""},
+#{"role":"assistant", "content": """
+## SubTask1 → Group1, union of skills in group: [PickupPayload, ReleasePayload] → assigned to Drone6 (fewest skills with both)
+## SubTask2 → Group1 (same as SubTask1) → assigned to Drone6
+#
+#allocated_subtasks = [
+#  {"name": "SubTask1", "drone": "Drone6"},
+#  {"name": "SubTask2", "drone": "Drone6"}
+#]"""},
+#
+## Example 3 ------------------------------------------------------------------------------------------
+#{"role":"user", "content": """
+#schedule = {
+#  "same_drone_groups": [
+#    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"], "skills": [CaptureRGBImage]}
+#  ],
+#  "rounds": [
+#    {"name": "Round1", "subtasks": ["SubTask1"]},
+#    {"name": "Round2", "subtasks": ["SubTask2"]},
+#    {"name": "Round3", "subtasks": ["SubTask3"]}
+#  ],
+#  "subtasks": [
+#    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House2"},
+#    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "House3"}, 
+#    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1"}
+#  ]
+#}
+#"""},
+#{"role":"assistant", "content": """
+## SubTask1 → Group1, union of skills in group: [CaptureRGBImage] → assigned to Drone1 (fewest skills)
+## SubTask2 → Group1 (same as SubTask1) → assigned to Drone1
+## SubTask3 → Group1 (same as SubTask1) → assigned to Drone1
+#
+#allocated_subtasks = [
+#  {"name": "SubTask1", "drone": "Drone1"},
+#  {"name": "SubTask2", "drone": "Drone1"},
+#  {"name": "SubTask3", "drone": "Drone1"}
+#]
+#"""},
+#
+## Example 4 ------------------------------------------------------------------------------------------
+#{"role":"user", "content": """
+#schedule = {
+#  "same_drone_groups": [],
+#  "rounds": [
+#    {"name": "Round1", "subtasks": ["SubTask1"]},
+#    {"name": "Round2", "subtasks": ["SubTask2"]}
+#  ],
+#  "subtasks": [
+#    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower"},
+#    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower"}
+#  ]
+#}
+#"""},
+#{"role":"assistant", "content": """
+## SubTask1 → No group, requires CaptureThermalImage → assigned to Drone3 (fewest skills)
+## SubTask2 → No group, requires CaptureRGBImage → assigned to Drone1 (fewest skills)
+#
+# allocated_subtasks = [
+#  {"name": "SubTask1", "drone": "Drone3"},
+#  {"name": "SubTask2", "drone": "Drone1"}
+#]
+#"""},
+#
+## Example 5 ------------------------------------------------------------------------------------------
+#{"role":"user", "content": """
+#schedule = {
+#  "same_drone_groups": [
+#    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": [PickupPayload, ReleasePayload]},
+#    {"name": "Group2", "subtasks": ["SubTask3", "SubTask4"], "skills": [CaptureThermalImage]}
+#  ],
+#  "rounds": [
+#    {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
+#    {"name": "Round2", "subtasks": ["SubTask2", "SubTask4"]}
+#  ],
+#  "subtasks": [
+#    {"name": "SubTask1", "skill": "PickupPayload", "object": "RoofTop1"},
+#    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House2"},
+#    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "SolarPanel1"},
+#    {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2"}
+#  ]
+#}
+#"""},
+#{"role":"assistant", "content": """
+## SubTask1 → Group1, union of skills in group: [PickupPayload, ReleasePayload] → assigned to Drone6 (fewest skills with both)
+## SubTask2 → Group1 (same as SubTask1) → assigned to Drone6
+## SubTask3 → Group2, same round as SubTask1 so must use different drone, union of skills in group: [CaptureThermalImage] → assigned to Drone3 (fewest skills)
+## SubTask4 → Group2 (same as SubTask3) → assigned to Drone3
+#
+#allocated_subtasks = [
+# {"name": "SubTask1", "drone": "Drone6"},
+# {"name": "SubTask2", "drone": "Drone6"},
+# {"name": "SubTask3", "drone": "Drone3"},
+# {"name": "SubTask4", "drone": "Drone3"}
+#]
+#"""}
 ]

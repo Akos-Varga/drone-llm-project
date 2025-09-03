@@ -59,7 +59,7 @@ m4 = "qwen2.5-coder:7b"
 m5 = "gpt-4o-mini"
 
 # Inference --------------------------------------------------------------
-user_task = tasks["Task10"]
+user_task = tasks["Task5"]
 model = m5
 print("User task: " + user_task)
 ## Decomposer
