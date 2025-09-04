@@ -1,5 +1,7 @@
 messages = [
-{"role": "system", "content": """
+  {
+    "role": "system",
+    "content": """
 You are a task allocator for a multi-drone system. You output only Python code.
 
 INPUT FORMAT:
@@ -21,22 +23,19 @@ CONSTRAINTS:
 5) For every allocated subtask, provide a single-line explanation in arrow format:
    SubTaskX → [group/round constraints] + [skill requirement] → [chosen drone & reason].
 
-IMPORTANT:
-- The fleet of drones will always be provided in the user input.
-- Never assume defaults. Ignore the drones in the demonstrations unless they appear in the user's input.
-
 OUTPUT FORMAT:
 # <SubTaskName> → [constraints + skill requirement] → [chosen drone & reason]
 allocated_subtasks = [
   {"name": "<SubTaskName>", "drone": "<DroneName>"},
   ...
 ]
+"""
+  },
 
----
-DEMONSTRATION EXAMPLES (for learning only, ignore their fleets when solving real inputs):
-
-Example 1
-Input:
+  # ----------------------------- Example 1 -----------------------------
+  {
+    "role": "user",
+    "content": """
 fleet = {
   "Drone1": ["CaptureRGBImage"],
   "Drone2": ["CaptureRGBImage"],
@@ -61,8 +60,11 @@ schedule = {
     {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1"}
   ]
 }
-
-Output:
+"""
+  },
+  {
+    "role": "assistant",
+    "content": """
 # SubTask1 → Group1, union skills: [CaptureRGBImage, CaptureThermalImage] → assigned to Drone7
 # SubTask2 → Group1 (same as SubTask1) → assigned to Drone7
 # SubTask3 → Same round as SubTask1, requires CaptureThermalImage → assigned to Drone3
@@ -71,11 +73,13 @@ allocated_subtasks = [
  {"name": "SubTask2", "drone": "Drone7"},
  {"name": "SubTask3", "drone": "Drone3"}
 ]
+"""
+  },
 
----
-
-Example 3
-Input:
+  # ----------------------------- Example 3 -----------------------------
+  {
+    "role": "user",
+    "content": """
 fleet = {
   "Drone1": ["CaptureRGBImage"],
   "Drone2": ["CaptureRGBImage"],
@@ -97,8 +101,11 @@ schedule = {
     {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1"}
   ]
 }
-
-Output:
+"""
+  },
+  {
+    "role": "assistant",
+    "content": """
 # SubTask1 → Group1, union skills: [CaptureRGBImage] → assigned to Drone1 (fewest skills)
 # SubTask2 → Group1 (same as SubTask1) → assigned to Drone1
 # SubTask3 → Group1 (same as SubTask1) → assigned to Drone1
@@ -107,11 +114,13 @@ allocated_subtasks = [
  {"name": "SubTask2", "drone": "Drone1"},
  {"name": "SubTask3", "drone": "Drone1"}
 ]
+"""
+  },
 
----
-
-Example 4 (4-drone fleet, mix of RGB + thermal)
-Input:
+  # ----------------------------- Example 4 -----------------------------
+  {
+    "role": "user",
+    "content": """
 fleet = {
   "Drone1": ["CaptureRGBImage"],
   "Drone2": ["CaptureThermalImage"],
@@ -129,19 +138,24 @@ schedule = {
     {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower"}
   ]
 }
-
-Output:
+"""
+  },
+  {
+    "role": "assistant",
+    "content": """
 # SubTask1 → No group, requires CaptureThermalImage → assigned to Drone2 (fewest skills)
 # SubTask2 → No group, requires CaptureRGBImage → assigned to Drone1 (fewest skills)
 allocated_subtasks = [
  {"name": "SubTask1", "drone": "Drone2"},
  {"name": "SubTask2", "drone": "Drone1"}
 ]
+"""
+  },
 
----
-
-Example 5
-Input:
+  # ----------------------------- Example 5 -----------------------------
+  {
+    "role": "user",
+    "content": """
 fleet = {
   "Drone1": ["CaptureThermalImage"],
   "Drone2": ["CaptureThermalImage"],
@@ -165,8 +179,11 @@ schedule = {
     {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2"}
   ]
 }
-
-Output:
+"""
+  },
+  {
+    "role": "assistant",
+    "content": """
 # SubTask1 → Group1, union skills: [PickupPayload, ReleasePayload] → assigned to Drone4 (fewest skills with both)
 # SubTask2 → Group1 (same as SubTask1) → assigned to Drone4
 # SubTask3 → Group2, same round as SubTask1 so must use different drone, requires CaptureThermalImage → assigned to Drone1 (fewest skills)
@@ -177,8 +194,6 @@ allocated_subtasks = [
  {"name": "SubTask3", "drone": "Drone1"},
  {"name": "SubTask4", "drone": "Drone1"}
 ]
-
----
-END OF DEMONSTRATIONS
-"""}
+"""
+  }
 ]

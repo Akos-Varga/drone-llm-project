@@ -26,7 +26,7 @@ schedule = {
 }
 
 ---
-DEMONSTRATION EXAMPLES (for learning only – ignore these inputs when solving real user inputs):
+DEMONSTRATION EXAMPLES (for learning only, ignore these inputs when solving real user inputs):
 
 Example 1
 Input:
@@ -57,30 +57,6 @@ schedule = {
 Example 2
 Input:
 subtasks = [
-  {"name": "SubTask1", "skill": "PickupPayload", "object": "House2", "depends_on": None, "same_drone_as": None},
-  {"name": "SubTask2", "skill": "ReleasePayload", "object": "House3", "depends_on": "SubTask1", "same_drone_as": "SubTask1"}
-]
-
-Output:
-schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["PickupPayload", "ReleasePayload"]}
-  ],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "PickupPayload", "object": "House2"},
-    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House3"}
-  ]
-}
-
----
-
-Example 3
-Input:
-subtasks = [
   {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House2", "depends_on": None, "same_drone_as": None},
   {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "House3", "depends_on": "SubTask1", "same_drone_as": "SubTask1"},
   {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "depends_on": "SubTask2", "same_drone_as": "SubTask1"}
@@ -105,29 +81,7 @@ schedule = {
 
 ---
 
-Example 4
-Input:
-subtasks = [
-  {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower", "depends_on": None, "same_drone_as": None},
-  {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower", "depends_on": "SubTask1", "same_drone_as": None}
-]
-
-Output:
-schedule = {
-  "same_drone_groups": [],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower"},
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower"}
-  ]
-}
-
----
-
-Example 5
+Example 3
 Input:
 subtasks = [
   {"name": "SubTask1", "skill": "PickupPayload", "object": "RoofTop1", "depends_on": None, "same_drone_as": None},
@@ -159,3 +113,50 @@ END OF DEMONSTRATIONS
 """
   }
 ]
+
+
+#Example 2
+#Input:
+#subtasks = [
+#  {"name": "SubTask1", "skill": "PickupPayload", "object": "House2", "depends_on": None, "same_drone_as": None},
+#  {"name": "SubTask2", "skill": "ReleasePayload", "object": "House3", "depends_on": "SubTask1", "same_drone_as": "SubTask1"}
+#]
+#
+#Output:
+#schedule = {
+#  "same_drone_groups": [
+#    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["PickupPayload", "ReleasePayload"]}
+#  ],
+#  "rounds": [
+#    {"name": "Round1", "subtasks": ["SubTask1"]},
+#    {"name": "Round2", "subtasks": ["SubTask2"]}
+#  ],
+#  "subtasks": [
+#    {"name": "SubTask1", "skill": "PickupPayload", "object": "House2"},
+#    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House3"}
+#  ]
+#}
+#
+#---
+#
+#Example 4
+#Input:
+#subtasks = [
+#  {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower", "depends_on": None, "same_drone_as": None},
+#  {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower", "depends_on": "SubTask1", "same_drone_as": None}
+#]
+#
+#Output:
+#schedule = {
+#  "same_drone_groups": [],
+#  "rounds": [
+#    {"name": "Round1", "subtasks": ["SubTask1"]},
+#    {"name": "Round2", "subtasks": ["SubTask2"]}
+#  ],
+#  "subtasks": [
+#    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower"},
+#    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower"}
+#  ]
+#}
+#
+#---

@@ -1,8 +1,9 @@
-from decomposer import messages as decomposer_prompt
-from allocator import messages as allocator_prompt
-from scheduler import messages as scheduler_prompt
+from multi_drone_task_allocation.allocation_with_dependencies.decomposer import messages as decomposer_prompt
+# from multi_drone_task_allocation.allocation_with_dependencies.allocator import messages as allocator_prompt
+from multi_drone_task_allocation.allocation_with_dependencies.allocator_fleet_info import messages as allocator_prompt
+from multi_drone_task_allocation.allocation_with_dependencies.scheduler import messages as scheduler_prompt
 
-from test_tasks import tasks
+from multi_drone_task_allocation.test_tasks import tasks
 
 import openai
 import time
@@ -41,8 +42,9 @@ def LM(model, messages):
             output += content
         return output
 
-# Message builder
+# Message builder --------------------------------------------------------
 def build_message(prompt, content):
+     # print(content)
      return [*prompt, {"role": "user", "content": content}]
 
 # Formatting functions ---------------------------------------------------
@@ -51,16 +53,27 @@ def remove_comments(commented_text):
      return "".join(line for line in lines if not line.lstrip().startswith("#") and line.strip())
 
 # Models -----------------------------------------------------------------
-
 m1 = "qwen2.5-coder:1.5b"
 m2 = "qwen2.5-coder:3b"
 m3 = "codegemma:7b"
 m4 = "qwen2.5-coder:7b"
 m5 = "gpt-4o-mini"
 
+# Drone fleet ------------------------------------------------------------
+fleet = {
+  "Drone1": ["CaptureRGBImage"],
+  "Drone2": ["CaptureRGBImage"],
+  "Drone3": ["CaptureThermalImage"],
+  "Drone4": ["CaptureThermalImage"],
+  "Drone5": ["CaptureRGBImage", "PickupPayload", "ReleasePayload"],
+  "Drone6": ["PickupPayload", "ReleasePayload"],
+  "Drone7": ["CaptureRGBImage", "CaptureThermalImage"],
+  "Drone8": ["CaptureRGBImage"]
+}
+
 # Inference --------------------------------------------------------------
-user_task = tasks["Task5"]
-model = m5
+user_task = tasks["Task10"]
+model = m4
 print("User task: " + user_task)
 ## Decomposer
 decomposer_message = build_message(decomposer_prompt, user_task)
@@ -81,7 +94,7 @@ end_time = time.time()
 print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
 ## Allocator
-allocator_message = build_message(allocator_prompt,cleaned_scheduled_task)
+allocator_message = build_message(allocator_prompt, f"fleet = {fleet}\n{cleaned_scheduled_task}")
 # print(allocator_message)
 start_time = time.time()
 allocated_task = LM(model=model, messages=allocator_message)

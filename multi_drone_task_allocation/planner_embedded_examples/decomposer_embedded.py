@@ -1,11 +1,12 @@
 ACTIONS = ["CaptureRGBImage", "CaptureThermalImage", "PickupPayload", "ReleasePayload"]
 OBJECTS = ["Base", "RoofTop1", "RoofTop2", "SolarPanel1", "SolarPanel2", "House1", "House2", "House3", "Tower"]
 
-messages = [{"role": "system", "content": """You decompose a natural-language drone task into a list of subtasks outputting only Python code.
-  
-ALLOWED SKILLS: {ACTIONS}
-ALLOWED OBJECTS: {OBJECTS}
-
+header = (
+    "You decompose a natural-language drone task into a list of subtasks outputting only Python code.\n\n"
+    f"ALLOWED SKILLS: {', '.join(ACTIONS)}\n"
+    f"ALLOWED OBJECTS: {', '.join(OBJECTS)}\n\n"
+)
+messages = [{"role": "system", "content": header + """
 CONSTRAINTS:
 1) Use `depends_on` if the task description specifies an explicit order (e.g., "after", "then").
 2) Use `same_drone_as` if the task description specifies that subtasks must be done by the same drone.
@@ -52,25 +53,6 @@ subtasks = [
 
 Example 2
 Input:
-Pick up a payload from House2 and deliver it to House3.
-
-Output:
-# Includes delivery: MUST include PickupPayload and ReleasePayload subtasks
-# SubTask1: Pick up the payload from House2
-# SubTask2: Deliver the package to House3
-
-# DEPENDENCIES
-# SubTask2 depends on SubTask1 and must use the same drone.
-
-subtasks = [
-    {"name": "SubTask1", "skill": "PickupPayload", "object": "House2", "depends_on": None, "same_drone_as": None},
-    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House3", "depends_on": "SubTask1", "same_drone_as": "SubTask1"}
-]
-
----
-
-Example 3
-Input:
 Take an RGB image of each house in the order of House2, House3, House1 with the same drone.
 
 Output:
@@ -90,25 +72,7 @@ subtasks = [
 
 ---
 
-Example 4
-Input:
-Take a thermal image of Tower then take an RGB image of it.
-
-Output:
-# SubTask1: Take thermal image of Tower
-# SubTask2: Take RGB image of Tower
-
-# DEPENDENCIES
-# SubTask2 depends on SubTask1.
-
-subtasks = [
-    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower", "depends_on": None, "same_drone_as": None},
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower", "depends_on": "SubTask1", "same_drone_as": None}
-]
-
----
-
-Example 5
+Example 3
 Input:
 Deliver a payload from RoofTop1 to House2. Take thermal images of SolarPanel1 and SolarPanel2 with the same drone.
 
@@ -131,5 +95,43 @@ subtasks = [
 
 ---
 END OF DEMONSTRATIONS
-""".format(ACTIONS=", ".join(ACTIONS), OBJECTS=", ".join(OBJECTS))}
+"""}
 ]
+
+
+#Example 2
+#Input:
+#Pick up a payload from House2 and deliver it to House3.
+#
+#Output:
+## Includes delivery: MUST include PickupPayload and ReleasePayload subtasks
+## SubTask1: Pick up the payload from House2
+## SubTask2: Deliver the package to House3
+#
+## DEPENDENCIES
+## SubTask2 depends on SubTask1 and must use the same drone.
+#
+#subtasks = [
+#    {"name": "SubTask1", "skill": "PickupPayload", "object": "House2", "depends_on": None, "same_drone_as": None},
+#    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House3", "depends_on": "SubTask1", "same_drone_as": "SubTask1"}
+#]
+#
+#---
+#
+#---
+#
+#Example 4
+#Input:
+#Take a thermal image of Tower then take an RGB image of it.
+#
+#Output:
+## SubTask1: Take thermal image of Tower
+## SubTask2: Take RGB image of Tower
+#
+## DEPENDENCIES
+## SubTask2 depends on SubTask1.
+#
+#subtasks = [
+#    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower", "depends_on": None, "same_drone_as": None},
+#    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower", "depends_on": "SubTask1", "same_drone_as": None}
+#]

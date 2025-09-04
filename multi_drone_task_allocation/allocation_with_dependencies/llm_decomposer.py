@@ -1,7 +1,7 @@
 # from task_decomposer import messages as prompt
 # from scheduler import messages as prompt
 from allocator import messages as prompt
-from test_tasks import tasks, tasks_decomposed, tasks_scheduled
+from multi_drone_task_allocation.test_tasks import tasks, tasks_decomposed, tasks_scheduled
 
 import openai
 import time
