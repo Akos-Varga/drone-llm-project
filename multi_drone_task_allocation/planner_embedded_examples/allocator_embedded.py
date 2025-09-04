@@ -171,7 +171,7 @@ allocated_subtasks = [
 
 ---
 
-Example 5 (5-drone fleet, payload + thermal mix)
+Example 5
 Input:
 fleet = {
   "Drone1": ["CaptureThermalImage"],
