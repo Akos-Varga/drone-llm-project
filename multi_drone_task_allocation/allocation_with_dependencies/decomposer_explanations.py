@@ -7,19 +7,20 @@ ALLOWED SKILLS: {", ".join(ACTIONS)}
 ALLOWED OBJECTS: {", ".join(OBJECTS)}
 
 CONSTRAINTS:
-1) Use `depends_on` if the task description specifies an explicit order (e.g., "after", "then").
-2) Use `same_drone_as` if the task description specifies that subtasks must be done by the same drone.
-3) Subtasks can ONLY set `depends_on` or `same_drone_as` to other subtasks from the same sentence.
-4) Any “deliver from X to Y” must include both:
-   - a `PickupPayload` subtask at X, and
-   - a `ReleasePayload` subtask at Y.  
-   The ReleasePayload must depend_on the PickupPayload and use the same drone.
+1) Add a temporal dependency whenever the text specifies an order (e.g., "after", "then", "before").
+2) Add a same-drone dependency whenever the text specifies that subtasks use the same drone.
+3) Use `depends_on` for temporal dependencies.
+4) Use `same_drone_as` for same-drone dependencies.
+5) For “deliver from X to Y”:
+   - Add a PickupPayload at X.
+   - Add a ReleasePayload at Y.
+   - ReleasePayload depends_on PickupPayload and same_drone_as PickupPayload.
 
 OUTPUT FORMAT:
 # <SubTaskName>: <short description>
 # ...
 
-# TEMPORAL DEPENDENCIES
+# TEMPORAL DEPENDENCIES (THEN/AFTER/BEFORE)
 # <SubTaskB> depends_on <SubTaskA>  [reason: "<brief cue from text>"]
 # ...
 
@@ -40,7 +41,7 @@ subtasks = [
 # SubTask2: Take thermal image of RoofTop2
 # SubTask3: Take thermal image of House1
 
-# TEMPORAL DEPENDENCIES
+# TEMPORAL DEPENDENCIES (THEN/AFTER/BEFORE)
 # (none)
 
 # SAME-DRONE DEPENDENCIES
@@ -54,13 +55,11 @@ subtasks = [
 
 # Example 2 --------------------------------------------------------------------------------------------
 {"role": "user", "content": "Pick up a payload from House2 and deliver it to House3."},
-{"role": "assistant", "content": """# Includes delivery: MUST include PickupPayload and ReleasePayload subtasks
-
-# SubTask1: Pick up the payload from House2
+{"role": "assistant", "content": """# SubTask1: Pick up the payload from House2
 # SubTask2: Deliver the package to House3
-
-# TEMPORAL DEPENDENCIES
-# SubTask2 depends_on SubTask1  [reason: "deliver after pickup"]
+ 
+# TEMPORAL DEPENDENCIES (THEN/AFTER/BEFORE)
+# SubTask2 depends_on SubTask1  [reason: "delivery after pickup"]
 
 # SAME-DRONE DEPENDENCIES
 # SubTask2 same_drone_as SubTask1  [reason: "same carrier keeps payload"]
@@ -76,9 +75,9 @@ subtasks = [
 # SubTask2: Take RGB image of House3
 # SubTask3: Take RGB image of House1
 
-# TEMPORAL DEPENDENCIES
-# SubTask2 depends_on SubTask1  [reason: "order: House2 → House3"]
-# SubTask3 depends_on SubTask2  [reason: "order: House3 → House1"]
+# TEMPORAL DEPENDENCIES (THEN/AFTER/BEFORE)
+# SubTask2 depends_on SubTask1  [reason: "order"]
+# SubTask3 depends_on SubTask2  [reason: "order"]
 
 # SAME-DRONE DEPENDENCIES
 # SubTask2 same_drone_as SubTask1  [reason: "with the same drone"]
@@ -95,7 +94,7 @@ subtasks = [
 {"role":"assistant", "content": """# SubTask1: Take thermal image of Tower
 # SubTask2: Take RGB image of Tower
 
-# TEMPORAL DEPENDENCIES
+ # TEMPORAL DEPENDENCIES (THEN/AFTER/BEFORE)
 # SubTask2 depends_on SubTask1  [reason: "then"]
 
 # SAME-DRONE DEPENDENCIES
@@ -107,16 +106,16 @@ subtasks = [
 ]"""},
 
 # Example 5 --------------------------------------------------------------------------------------------
-{"role": "user", "content": "Deliver a payload from RoofTop1 to House2. Take thermal images of SolarPanel1 and SolarPanel2 with the same drone."},
-{"role": "assistant", "content": """# Includes delivery: MUST include PickupPayload and ReleasePayload subtasks
- 
-# SubTask1: Pick up payload from RoofTop1
+{"role": "user", "content": "Deliver a payload from RoofTop1 to House2, then take thermal images of SolarPanel1 and SolarPanel2 with the same drone."},
+{"role": "assistant", "content": """# SubTask1: Pick up payload from RoofTop1
 # SubTask2: Deliver package to House2
 # SubTask3: Take thermal image of SolarPanel1
 # SubTask4: Take thermal image of SolarPanel2
 
-# TEMPORAL DEPENDENCIES
+# TEMPORAL DEPENDENCIES (THEN/AFTER/BEFORE)
 # SubTask2 depends_on SubTask1  [reason: "delivery after pickup"]
+# SubTask3 depends_on SubTask2  [reason: "then (start imaging after delivery)"]
+# SubTask4 depends_on SubTask2  [reason: "then (start imaging after delivery)"]
 
 # SAME-DRONE DEPENDENCIES
 # SubTask2 same_drone_as SubTask1  [reason: "same carrier keeps payload"]
@@ -125,7 +124,8 @@ subtasks = [
 subtasks = [
     {"name": "SubTask1", "skill": "PickupPayload", "object": "RoofTop1", "depends_on": None, "same_drone_as": None},
     {"name": "SubTask2", "skill": "ReleasePayload", "object": "House2", "depends_on": "SubTask1", "same_drone_as": "SubTask1"},
-    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "SolarPanel1", "depends_on": None, "same_drone_as": None},
-    {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2", "depends_on": None, "same_drone_as": "SubTask3"}
-]"""}
+    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "SolarPanel1", "depends_on": "SubTask2", "same_drone_as": None},
+    {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2", "depends_on": "SubTask2", "same_drone_as": "SubTask3"}
+]
+"""}
 ]

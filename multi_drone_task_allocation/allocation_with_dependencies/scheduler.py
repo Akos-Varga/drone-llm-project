@@ -9,8 +9,8 @@ subtasks = [
 CONSTRAINTS:
 1) Build same_drone_groups by collecting tasks connected via same_drone_as.
 2) A subtask may appear only in a round strictly AFTER all of its depends_on tasks’ rounds.
-3) In each round, include at most ONE subtask from any same_drone_group (one drone cannot do two tasks at once).
-4) Assign each task to the EARLIEST round that satisfies all rules
+3) In a round, include at most ONE subtask from any same_drone_group (one drone cannot do two tasks at once).
+4) Assign each task to the EARLIEST round that satisfies all rules.
 5) Schedule as many tasks in the same round as allowed by the rules.
 6) Minimize the total number of rounds.
              

@@ -1,7 +1,9 @@
-from multi_drone_task_allocation.allocation_with_dependencies.decomposer import messages as decomposer_prompt
+# from multi_drone_task_allocation.allocation_with_dependencies.decomposer import messages as decomposer_prompt
+from multi_drone_task_allocation.allocation_with_dependencies.decomposer_explanations import messages as decomposer_prompt
+from multi_drone_task_allocation.allocation_with_dependencies.scheduler import messages as scheduler_prompt
 # from multi_drone_task_allocation.allocation_with_dependencies.allocator import messages as allocator_prompt
 from multi_drone_task_allocation.allocation_with_dependencies.allocator_fleet_info import messages as allocator_prompt
-from multi_drone_task_allocation.allocation_with_dependencies.scheduler import messages as scheduler_prompt
+
 
 from multi_drone_task_allocation.test_tasks import tasks
 
@@ -21,8 +23,8 @@ def LM(model, messages):
             response = client.chat.completions.create(
                 model=model,
                 messages=messages,
-                temperature=0.0,
-                max_tokens=1500
+                # temperature=0.0,
+                # max_tokens=1500
             )
             output=response.choices[0].message.content
             print(output)
@@ -58,6 +60,7 @@ m2 = "qwen2.5-coder:3b"
 m3 = "codegemma:7b"
 m4 = "qwen2.5-coder:7b"
 m5 = "gpt-4o-mini"
+m6 = "gpt-5-mini"
 
 # Drone fleet ------------------------------------------------------------
 fleet = {
@@ -65,16 +68,17 @@ fleet = {
   "Drone2": ["CaptureRGBImage"],
   "Drone3": ["CaptureThermalImage"],
   "Drone4": ["CaptureThermalImage"],
-  "Drone5": ["CaptureRGBImage", "PickupPayload", "ReleasePayload"],
-  "Drone6": ["PickupPayload", "ReleasePayload"],
+  "Drone5": ["CaptureThermalImage", "PickupPayload", "ReleasePayload"],
+  "Drone6": ["PickupPayload", "ReleasePayload", "CaptureRGBImage"],
   "Drone7": ["CaptureRGBImage", "CaptureThermalImage"],
   "Drone8": ["CaptureRGBImage"]
 }
 
 # Inference --------------------------------------------------------------
 user_task = tasks["Task10"]
-model = m4
-print("User task: " + user_task)
+model = m6
+
+print(user_task)
 ## Decomposer
 decomposer_message = build_message(decomposer_prompt, user_task)
 # print(decomposer_message)
