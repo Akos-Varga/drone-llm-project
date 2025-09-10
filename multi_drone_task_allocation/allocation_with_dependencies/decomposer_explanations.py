@@ -59,10 +59,10 @@ subtasks = [
 # SubTask2: Deliver the package to House3
  
 # TEMPORAL DEPENDENCIES (THEN/AFTER/BEFORE)
-# SubTask2 depends_on SubTask1  [reason: "delivery after pickup"]
+# SubTask2 depends_on SubTask1  [reason: delivery after pickup]
 
 # SAME-DRONE DEPENDENCIES
-# SubTask2 same_drone_as SubTask1  [reason: "same carrier keeps payload"]
+# SubTask2 same_drone_as SubTask1  [reason: same carrier keeps payload]
 
 subtasks = [
     {"name": "SubTask1", "skill": "PickupPayload", "object": "House2", "depends_on": None, "same_drone_as": None},
@@ -113,12 +113,12 @@ subtasks = [
 # SubTask4: Take thermal image of SolarPanel2
 
 # TEMPORAL DEPENDENCIES (THEN/AFTER/BEFORE)
-# SubTask2 depends_on SubTask1  [reason: "delivery after pickup"]
+# SubTask2 depends_on SubTask1  [reason: delivery after pickup]
 # SubTask3 depends_on SubTask2  [reason: "then (start imaging after delivery)"]
 # SubTask4 depends_on SubTask2  [reason: "then (start imaging after delivery)"]
 
 # SAME-DRONE DEPENDENCIES
-# SubTask2 same_drone_as SubTask1  [reason: "same carrier keeps payload"]
+# SubTask2 same_drone_as SubTask1  [reason: same carrier keeps payload]
 # SubTask4 same_drone_as SubTask3  [reason: "with the same drone"]
 
 subtasks = [

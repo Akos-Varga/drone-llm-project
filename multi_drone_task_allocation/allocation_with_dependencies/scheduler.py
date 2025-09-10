@@ -55,7 +55,7 @@ subtasks = [
 {"role": "assistant", "content": """
 schedule = {
   "same_drone_groups": [
-    {"name": "Group1", ["SubTask1", "SubTask2"], "skills: ["PickupPayload", "ReleasePayload"]}
+    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills: ["PickupPayload", "ReleasePayload"]}
   ], 
   "rounds": [
     {"name": "Round1", "subtasks": ["SubTask1"]},
@@ -77,7 +77,7 @@ schedule = {
 {"role": "assistant", "content": """
 schedule = {
   "same_drone_groups": [
-    {"name": "Group1", ["SubTask1", "SubTask2", "SubTask3"], "skills": ["CaptureRGBImage"]}
+    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"], "skills": ["CaptureRGBImage"]}
   ], 
   "rounds": [
     {"name": "Round1", "subtasks": ["SubTask1"]},
@@ -121,8 +121,8 @@ subtasks = [
 {"role": "assistant", "content": """
 schedule = {
   "same_drone_groups": [
-    {"name": "Group1", ["SubTask1", "SubTask2"], "skills": ["PickupPayload", "ReleasePayload"]},
-    {"name": "Group2", ["SubTask3", "SubTask4"], "skills": ["CaptureThermalImage"]}
+    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["PickupPayload", "ReleasePayload"]},
+    {"name": "Group2", "subtasks": ["SubTask3", "SubTask4"], "skills": ["CaptureThermalImage"]}
   ], 
   "rounds": [
     {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},

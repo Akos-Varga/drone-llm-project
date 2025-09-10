@@ -20,21 +20,29 @@ client = openai.OpenAI(api_key = api_key)
 # LM Inference
 def LM(model, messages):
     if("gpt" in model):
-            response = client.chat.completions.create(
-                model=model,
-                messages=messages,
-                # temperature=0.0,
-                # max_tokens=1500
-            )
-            output=response.choices[0].message.content
-            print(output)
-            return output
- 
+      params = {
+      "model": model,
+      "messages": messages,
+      }
+
+      if "gpt-5" not in model.lower():
+        params["temperature"] = 0.0
+        params["max_tokens"] = 1024
+
+      print(params)
+      response = client.chat.completions.create(**params)
+      output = response.choices[0].message.content
+      print(output)
+      return output
+    
     else:
         response = chat(
           model=model,
           messages=messages,
-          stream=True
+          stream=True,
+          options={
+              "temperature": 0.0
+          }
         )
 
         output = ""
@@ -61,9 +69,10 @@ m3 = "codegemma:7b"
 m4 = "qwen2.5-coder:7b"
 m5 = "gpt-4o-mini"
 m6 = "gpt-5-mini"
+m7 = "qwen2.5:7b"
 
 # Drone fleet ------------------------------------------------------------
-fleet = {
+'''fleet = {
   "Drone1": ["CaptureRGBImage"],
   "Drone2": ["CaptureRGBImage"],
   "Drone3": ["CaptureThermalImage"],
@@ -72,36 +81,45 @@ fleet = {
   "Drone6": ["PickupPayload", "ReleasePayload", "CaptureRGBImage"],
   "Drone7": ["CaptureRGBImage", "CaptureThermalImage"],
   "Drone8": ["CaptureRGBImage"]
+}'''
+
+fleet = {
+  "Drone1": ["CaptureThermalImage", "PickupPayload", "ReleasePayload"],
+  "Drone2": ["PickupPayload", "ReleasePayload", "CaptureRGBImage"],
+  "Drone3": ["CaptureRGBImage", "CaptureThermalImage"],
+  "Drone4": ["CaptureRGBImage"],
+  "Drone5": ["CaptureThermalImage"],
+  "Drone6": ["PickupPayload", "ReleasePayload"]
 }
 
 # Inference --------------------------------------------------------------
-user_task = tasks["Task10"]
-model = m6
+# user_task = tasks["Task1"]
+model = m7
+for task_id, user_task in list(tasks.items()):
+  print(task_id + ": " + user_task)
+  ## Decomposer
+  decomposer_message = build_message(decomposer_prompt, user_task)
+  # print(decomposer_message)
+  start_time = time.time()
+  decomposed_task = LM(model=model, messages=decomposer_message)
+  cleaned_decomposed_task = remove_comments(decomposed_task)
+  end_time = time.time()
+  print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
-print(user_task)
-## Decomposer
-decomposer_message = build_message(decomposer_prompt, user_task)
-# print(decomposer_message)
-start_time = time.time()
-decomposed_task = LM(model=model, messages=decomposer_message)
-cleaned_decomposed_task = remove_comments(decomposed_task)
-end_time = time.time()
-print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
+  ## Scheduler
+  scheduler_message = build_message(scheduler_prompt, cleaned_decomposed_task)
+  # print(scheduler_message)
+  start_time = time.time()
+  scheduled_task = LM(model=model, messages=scheduler_message)
+  cleaned_scheduled_task = remove_comments(scheduled_task)
+  end_time = time.time()
+  print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
-## Scheduler
-scheduler_message = build_message(scheduler_prompt, cleaned_decomposed_task)
-# print(scheduler_message)
-start_time = time.time()
-scheduled_task = LM(model=model, messages=scheduler_message)
-cleaned_scheduled_task = remove_comments(scheduled_task)
-end_time = time.time()
-print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
-
-## Allocator
-allocator_message = build_message(allocator_prompt, f"fleet = {fleet}\n{cleaned_scheduled_task}")
-# print(allocator_message)
-start_time = time.time()
-allocated_task = LM(model=model, messages=allocator_message)
-cleaned_allocated_task = remove_comments(allocated_task)
-end_time = time.time()
-print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
+  ## Allocator
+  allocator_message = build_message(allocator_prompt, f"fleet = {fleet}\n{cleaned_scheduled_task}")
+  # print(allocator_message)
+  start_time = time.time()
+  allocated_task = LM(model=model, messages=allocator_message)
+  cleaned_allocated_task = remove_comments(allocated_task)
+  end_time = time.time()
+  print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)

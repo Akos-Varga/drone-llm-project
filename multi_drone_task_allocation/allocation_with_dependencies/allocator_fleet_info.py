@@ -67,7 +67,7 @@ schedule = {
     "content": """
 # SubTask1 → Group1, union skills: [CaptureRGBImage, CaptureThermalImage] → assigned to Drone7
 # SubTask2 → Group1 (same as SubTask1) → assigned to Drone7
-# SubTask3 → Same round as SubTask1, requires CaptureThermalImage → assigned to Drone3
+# SubTask3 → No group, Round2 (same as SubTask1 so must use different drone), requires CaptureThermalImage → assigned to Drone3
 allocated_subtasks = [
  {"name": "SubTask1", "drone": "Drone7"},
  {"name": "SubTask2", "drone": "Drone7"},
@@ -186,7 +186,7 @@ schedule = {
     "content": """
 # SubTask1 → Group1, union skills: [PickupPayload, ReleasePayload] → assigned to Drone4 (fewest skills with both)
 # SubTask2 → Group1 (same as SubTask1) → assigned to Drone4
-# SubTask3 → Group2, same round as SubTask1 so must use different drone, requires CaptureThermalImage → assigned to Drone1 (fewest skills)
+# SubTask3 → Group2, Round2 (same as SubTask1 so must use different drone), requires CaptureThermalImage → assigned to Drone1 (fewest skills)
 # SubTask4 → Group2 (same as SubTask3) → assigned to Drone1
 allocated_subtasks = [
  {"name": "SubTask1", "drone": "Drone4"},
