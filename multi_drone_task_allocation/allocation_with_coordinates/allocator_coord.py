@@ -1,3 +1,4 @@
+# drone1: [{"taskname": "Task1", "finishtime": 3}, {"taskname": "Task3", "finishtime": 7}]
 messages = [
   {
     "role": "system",
@@ -42,8 +43,8 @@ fleet = {
   "Drone3": ["CaptureThermalImage"],
   "Drone4": ["CaptureThermalImage"],
   "Drone5": ["CaptureRGBImage", "PickupPayload", "ReleasePayload"],
-  "Drone6": ["PickupPayload", "ReleasePayload"],
-  "Drone7": ["CaptureRGBImage", "CaptureThermalImage"],
+  "Drone6": ["RecordVideo", "InspectStructure"],
+  "Drone7": ["", "CaptureThermalImage"],
   "Drone8": ["CaptureRGBImage"]
 }
 schedule = {

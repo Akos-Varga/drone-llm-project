@@ -1,9 +1,9 @@
 from multi_drone_task_allocation.allocation_with_coordinates.decomposer_coord import messages as decomposer_prompt
-from multi_drone_task_allocation.allocation_with_coordinates.scheduler_coord import messages as scheduler_prompt
+from multi_drone_task_allocation.allocation_with_coordinates.drone_match_coord import messages as scheduler_prompt
 from multi_drone_task_allocation.allocation_with_coordinates.allocator_coord import messages as allocator_prompt
 
 
-from multi_drone_task_allocation.test_tasks import tasks
+from multi_drone_task_allocation.allocation_with_dependencies.test_tasks import tasks
 
 import openai
 import time

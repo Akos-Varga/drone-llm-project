@@ -3,7 +3,7 @@ from multi_drone_task_allocation.allocation_with_dependencies.scheduler import m
 from multi_drone_task_allocation.allocation_with_dependencies.allocator_fleet_info import messages as allocator_prompt
 
 
-from multi_drone_task_allocation.test_tasks import tasks
+from multi_drone_task_allocation.allocation_with_dependencies.test_tasks import tasks
 
 import openai
 import time

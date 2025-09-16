@@ -1,4 +1,6 @@
-messages = [{"role": "system", "content": """"You build parallel "rounds" from given list of subtasks outputting only Python code.
+# Input should be groups from decomposer and drones with skills
+
+messages = [{"role": "system", "content": """"Your a
              
 INPUT FORMAT:
 subtasks = [
@@ -25,11 +27,10 @@ schedule = {
 # Example 1 ------------------------------------------------------------------------------------------
 {"role":"user", "content": """
 subtasks = [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "depends_on": None, "same_drone_as": None},
-    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "depends_on": None, "same_drone_as": "SubTask1"},
-    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1", "depends_on": None, "same_drone_as": None}
-]"""},
-
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "pos": (45, 33), depends_on": None, "same_drone_as": None},
+    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "pos": (78, 62), "depends_on": None, "same_drone_as": "SubTask1"},
+    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1", "pos": (12, 87), "depends_on": None, "same_drone_as": None}
+ ]"""},
 {"role": "assistant", "content": """
 schedule = {
   "same_drone_groups": [
