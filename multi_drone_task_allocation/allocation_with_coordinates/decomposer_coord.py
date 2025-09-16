@@ -75,8 +75,7 @@ Allowed objects: [
 subtasks = [
     {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "pos": (7, 13)},
     {"name": "SubTask2", "skill": "PickupPayload", "object": "House2", "pos": (95, 64)},
-    {"name": "SubTask3", "skill": "ReleasePayload", "object": "House3", "pos": (53, 49)}
-    
+    {"name": "SubTask3", "skill": "ReleasePayload", "object": "House3", "pos": (53, 49)} 
 ]
  
 groups = [

@@ -3,8 +3,8 @@
 messages = [{"role": "system", "content": """"Your a
              
 INPUT FORMAT:
-subtasks = [
-    {"name": "<SubTaskName>", "skill": "<SkillName>", "object": "<ObjectName>", "depends_on": "<SubTaskName>" or None, "same_drone_as": "<SubTaskName>" or None},
+groups = [
+    {"name": <GroupName>, "subtasks": [<SubTaskName>, ...], "skills": [<SkillName>, ...]},
     ...
 ]
              
@@ -26,114 +26,56 @@ schedule = {
 
 # Example 1 ------------------------------------------------------------------------------------------
 {"role":"user", "content": """
-subtasks = [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "pos": (45, 33), depends_on": None, "same_drone_as": None},
-    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "pos": (78, 62), "depends_on": None, "same_drone_as": "SubTask1"},
-    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1", "pos": (12, 87), "depends_on": None, "same_drone_as": None}
- ]"""},
+drones = {
+  "Drone1": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (23, 77), "speed": 14},
+  "Drone2": {"skills": ["CaptureThermalImage"], "pos": (64, 12), "speed": 17},
+  "Drone3": {"skills": ["CaptureRGBImage"], "pos": (89, 45), "speed": 11},
+  "Drone4": {"skills": ["CaptureRGBImage", "CaptureThermalImage", "InspectStructure"], "pos": (35, 58), "speed": 19},
+  "Drone5": {"skills": ["PickupPayload", "ReleasePayload"], "pos": (10, 91), "speed": 13}
+}
+
+groups = [
+  {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["CaptureRGBImage", "CaptureThermalImage"]},
+  {"name": "Group2", "subtasks": ["SubTask3"], "skills": ["CaptureThermalImage"]}
+]"""},
 {"role": "assistant", "content": """
-schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["CaptureRGBImage", "CaptureThermalImage"]}
-  ], 
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1"},
-    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2"},
-    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1"},
-  ]
-}"""},
+
+"""},
 
 # Example 2 --------------------------------------------------------------------------------------------
 {"role":"user", "content":"""
-subtasks = [
-    {"name": "SubTask1", "skill": "PickupPayload", "object": "House2", "depends_on": None, "same_drone_as": None},
-    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House3", "depends_on": "SubTask1", "same_drone_as": "SubTask1"}
+drones = {
+  "Drone1": {"skills": ["PickupPayload"], "pos": (42, 59), "speed": 14},
+  "Drone2": {"skills": ["InspectStructure"], "pos": (21, 88), "speed": 17},
+  "Drone3": {"skills": ["ReleasePayload"], "pos": (15, 77), "speed": 12},
+  "Drone4": {"skills": ["MeasureWind"], "pos": (8, 25), "speed": 19},
+  "Drone5": {"skills": ["PickupPayload", "ReleasePayload"], "pos": (67, 34), "speed": 11},
+  "Drone6": {"skills": ["InspectStructure", "RecordVideo"], "pos": (90, 12), "speed": 16}
+}
+
+groups = [
+  {"name": "Group1", "subtasks": ["SubTask1"], "skills": ["InspectStructure"]},
+  {"name": "Group2", "subtasks": ["SubTask2", "SubTask3"], "skills": ["PickupPayload", "ReleasePayload"]}
 ]"""},
 {"role": "assistant", "content": """
-schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills: ["PickupPayload", "ReleasePayload"]}
-  ], 
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]}
-  ],
-  "subtasks": [
-    { "name": "SubTask1", "skill": "PickupPayload", "object": "House2" },
-    { "name": "SubTask2", "skill": "ReleasePayload", "object": "House3" }
-  ]
-}"""},
+
+"""},
 
 # Example 3 --------------------------------------------------------------------------------------------
 {"role":"user", "content":"""
- subtasks = [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House2", "depends_on": None, "same_drone_as": None},
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "House3", "depends_on": "SubTask1", "same_drone_as": "SubTask1"},
-    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "depends_on": "SubTask2", "same_drone_as": "SubTask1"}
-  ]"""},
-{"role": "assistant", "content": """
-schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"], "skills": ["CaptureRGBImage"]}
-  ], 
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]},
-    {"name": "Round3", "subtasks": ["SubTask3"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House2"},
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "House3"}, 
-    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1"}
-  ]
-}"""},
-
-# Example 4 --------------------------------------------------------------------------------------------
-{"role":"user", "content":"""
-subtasks = [
-    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower", "depends_on": None, "same_drone_as": None},
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower", "depends_on": "SubTask1", "same_drone_as": None}
+drones = {
+  "Drone1": {"skills": ["CaptureThermalImage", "CaptureRGBImage"], "pos": (73, 12), "speed": 15},
+  "Drone2": {"skills": ["MeasureWind"], "pos": (41, 85), "speed": 12},
+  "Drone3": {"skills": ["CaptureRGBImage", "MeasureWind"], "pos": (96, 37), "speed": 18}
+}
+ 
+groups = [
+  {"name": "Group1", "subtasks": ["SubTask1"], "skills": ["CaptureThermalImage"]},
+  {"name": "Group2", "subtasks": ["SubTask2"], "skills": ["CaptureRGBImage"]},
+  {"name": "Group3", "subtasks": ["SubTask3"], "skills": ["MeasureWind"]},
+  {"name": "Group4", "subtasks": ["SubTask4"], "skills": ["MeasureWind"]},
 ]"""},
 {"role": "assistant", "content": """
-schedule = {
-  "same_drone_groups": [],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower"},
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower"}
-  ]
-}"""},
 
-# Example 5 --------------------------------------------------------------------------------------------
-{"role":"user", "content":"""
-subtasks = [
-    {"name": "SubTask1", "skill": "PickupPayload", "object": "RoofTop1", "depends_on": None, "same_drone_as": None},
-    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House2", "depends_on": "SubTask1", "same_drone_as": "SubTask1"},
-    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "SolarPanel1", "depends_on": None, "same_drone_as": None},
-    {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2", "depends_on": None, "same_drone_as": "SubTask3"}
-]"""},
-{"role": "assistant", "content": """
-schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["PickupPayload", "ReleasePayload"]},
-    {"name": "Group2", "subtasks": ["SubTask3", "SubTask4"], "skills": ["CaptureThermalImage"]}
-  ], 
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
-    {"name": "Round2", "subtasks": ["SubTask2", "SubTask4"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "PickupPayload", "object": "RoofTop1"},
-    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House2"},
-    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "SolarPanel1"},
-    {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2"}
-  ]
-}"""},
+"""}
 ]
