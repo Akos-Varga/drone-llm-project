@@ -1,10 +1,10 @@
-from multi_drone_task_allocation.allocation_with_dependencies.decomposer_explanations import messages as decomposer_prompt
-from multi_drone_task_allocation.allocation_with_dependencies.scheduler import messages as scheduler_prompt
-from multi_drone_task_allocation.allocation_with_dependencies.allocator_fleet_info import messages as allocator_prompt
-
-
-from multi_drone_task_allocation.allocation_with_dependencies.test_tasks import tasks
-
+#from multi_drone_task_allocation.allocation_with_dependencies.decomposer_explanations import messages as decomposer_prompt
+#from multi_drone_task_allocation.allocation_with_dependencies.scheduler import messages as scheduler_prompt
+#from multi_drone_task_allocation.allocation_with_dependencies.allocator_fleet_info import messages as allocator_prompt
+#
+#
+#from multi_drone_task_allocation.allocation_with_dependencies.test_tasks import tasks
+#
 import openai
 import time
 from ollama import chat
@@ -89,6 +89,9 @@ fleet = {
   "Drone6": ["PickupPayload", "ReleasePayload"]
 }
 
+msg = [{'role': 'user', 'content': "What is the euclidean distance between these two points: (13, 53) and (24, 98)?  ONLY output the result."}]
+LM(model=m5, messages=msg)
+'''
 # Inference --------------------------------------------------------------
 # user_task = tasks["Task1"]
 model = m3
@@ -120,3 +123,4 @@ for task_id, user_task in list(tasks.items()):
   cleaned_allocated_task = remove_comments(allocated_task)
   end_time = time.time()
   print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
+  '''

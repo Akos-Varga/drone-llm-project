@@ -1,36 +1,6 @@
 import math
 
 def compute_travel_times(objects: dict, drones: dict):
-    """
-    Compute travel times:
-    1) From each drone start position to each object
-    2) From each object to every other object (drone-specific)
-    
-    Parameters
-    ----------
-    objects : dict
-        { "ObjectName": (x, y), ... }
-    drones : dict
-        { "DroneName": { "skills": [...], "pos": (x,y), "speed": v }, ... }
-    
-    Returns
-    -------
-    dict
-        {
-            "drone_to_object": {
-                drone: { object: time_sec, ... },
-                ...
-            },
-            "drone_object_to_object": {
-                drone: {
-                    objectA: { objectB: time_sec, ... },
-                    ...
-                },
-                ...
-            }
-        }
-    """
-    
     def euclidean(p1, p2):
         return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
     
