@@ -1,200 +1,115 @@
-# drone1: [{"taskname": "Task1", "finishtime": 3}, {"taskname": "Task3", "finishtime": 7}]
 messages = [
-  {
-    "role": "system",
-    "content": """
-You are a task allocator for a multi-drone system. You output only Python code.
+{"role": "system", "content": """
+You are a task allocator and scheduler for a multi-drone system. You output only Python code.
 
 INPUT FORMAT:
-fleet = {
-  "<DroneName>": ["<SkillName>", ...],
-  ...
-}
-schedule = {
-  "same_drone_groups": [ {"name": "<GroupName>", "subtasks": ["<SubTaskName>", ...], "skills": ["<SkillName>", ...]}, ... ],
-  "rounds": [ {"name": "<RoundName>", "subtasks": ["<SubTaskName>", ...]}, ... ],
-  "subtasks": [ {"name": "<SubTaskName>", "skill": "<Skill>", "object": "<ObjectName>"}, ... ]
-}
+subtasks_with_drones = [
+    {"name": <SubTaskName>, "skill": <SkillName>, "object": <ObjectName>, "pos": (<x>, <y>), "drones": [<DroneName>, ...]},
+    ...
+]
+ 
+travel_time = {'drone_to_object':  {<DroneName>: {<ArrivalObjectName>: <TravelTime>, ...}, ...}, 'drone_object_to_object': {<DroneName>:{<DepartureObjectName>: {<ArrivalObjectName>: <TravelTime>, ...}, ...}, ...}}
 
 CONSTRAINTS:
-1) Assign each subtask only to a drone that has the required skill.
-2) Subtasks within a "same_drone_group" MUST be assigned to the same drone, which must have all skills required by that group.
-3) In the same round, one drone MUST do only one subtask.
-4) If multiple drones qualify, choose the one with the fewest skills. If tied, select the drone with the smallest ID.
-5) For every allocated subtask, provide a single-line explanation in arrow format:
-   SubTaskX → [group/round constraints] + [skill requirement] → [chosen drone & reason].
+1) Assign each subtask exactly once, and only to a drone listed in its "drones" field.
+2) Each scheduled entry must use the subtask’s exact "skill" and "object".
+3) Tasks are instantaneous on arrival: no service time at the object.
+4) Time semantics:
+   a) startTime is the departure time from the drone’s current location; startTime >= 0 (0 by default; waiting allowed).
+   b) endTime is the arrival time at the task’s object.
+   c) First leg equality: endTime - startTime == travel_time['drone_to_object'][Drone][Object].
+   d) For consecutive tasks from object A to B on the same drone:
+      - startTime(next) >= endTime(prev)
+      - endTime(next) - startTime(next) == travel_time['drone_object_to_object'][Drone][A][B]
+   e) Use the provided self-travel time when A == B (often 0.0).
+5) Capacity: no overlapping intervals on the same drone. Intervals are half-open [startTime, endTime).
+6) Objective: minimize makespan (max over all endTime).
 
 OUTPUT FORMAT:
-# <SubTaskName> → [constraints + skill requirement] → [chosen drone & reason]
-allocated_subtasks = [
-  {"name": "<SubTaskName>", "drone": "<DroneName>"},
-  ...
-]
-"""
-  },
-
-  # ----------------------------- Example 1 -----------------------------
-  {
-    "role": "user",
-    "content": """
-fleet = {
-  "Drone1": ["CaptureRGBImage"],
-  "Drone2": ["CaptureRGBImage"],
-  "Drone3": ["CaptureThermalImage"],
-  "Drone4": ["CaptureThermalImage"],
-  "Drone5": ["CaptureRGBImage", "PickupPayload", "ReleasePayload"],
-  "Drone6": ["RecordVideo", "InspectStructure"],
-  "Drone7": ["", "CaptureThermalImage"],
-  "Drone8": ["CaptureRGBImage"]
-}
 schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["CaptureRGBImage", "CaptureThermalImage"]}
-  ],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1"},
-    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2"},
-    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "House1"}
-  ]
+  <DroneName>: [
+    {"name": <SubTaskName>, "object": <ObjectName>, "skill": <SkillName>, "startTime": <startTime>, "endTime": <endTime>},
+    ...
+ ],
+ ...
 }
-"""
-  },
-  {
-    "role": "assistant",
-    "content": """
-# SubTask1 → Group1, union skills: [CaptureRGBImage, CaptureThermalImage] → assigned to Drone7
-# SubTask2 → Group1 (same as SubTask1) → assigned to Drone7
-# SubTask3 → No group, Round2 (same as SubTask1 so must use different drone), requires CaptureThermalImage → assigned to Drone3
-allocated_subtasks = [
- {"name": "SubTask1", "drone": "Drone7"},
- {"name": "SubTask2", "drone": "Drone7"},
- {"name": "SubTask3", "drone": "Drone3"}
-]
-"""
-  },
+"""},
 
-  # ----------------------------- Example 3 -----------------------------
-  {
-    "role": "user",
-    "content": """
-fleet = {
-  "Drone1": ["CaptureRGBImage"],
-  "Drone2": ["CaptureRGBImage"],
-  "Drone3": ["CaptureRGBImage", "PickupPayload", "ReleasePayload"],
-  "Drone4": ["CaptureRGBImage"]
-}
-schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2", "SubTask3"], "skills": ["CaptureRGBImage"]}
-  ],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]},
-    {"name": "Round3", "subtasks": ["SubTask3"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House2"},
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "House3"},
-    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1"}
-  ]
-}
-"""
-  },
-  {
-    "role": "assistant",
-    "content": """
-# SubTask1 → Group1, union skills: [CaptureRGBImage] → assigned to Drone1 (fewest skills)
-# SubTask2 → Group1 (same as SubTask1) → assigned to Drone1
-# SubTask3 → Group1 (same as SubTask1) → assigned to Drone1
-allocated_subtasks = [
- {"name": "SubTask1", "drone": "Drone1"},
- {"name": "SubTask2", "drone": "Drone1"},
- {"name": "SubTask3", "drone": "Drone1"}
+# Example 1 ------------------------------------------------------------------------------------------
+{"role": "user", "content": """
+subtasks_with_drones = [
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "pos": (45, 33), "drones": ["Drone1", "Drone3", "Drone4"]},
+    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "pos": (78, 62), "drones": ["Drone1", "Drone2", "Drone4"]},
+    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "pos": (12, 87), "drones": ["Drone1", "Drone3", "Drone4"]}
 ]
-"""
-  },
 
-  # ----------------------------- Example 4 -----------------------------
-  {
-    "role": "user",
-    "content": """
-fleet = {
-  "Drone1": ["CaptureRGBImage"],
-  "Drone2": ["CaptureThermalImage"],
-  "Drone3": ["CaptureRGBImage", "CaptureThermalImage"],
-  "Drone4": ["CaptureRGBImage"]
-}
+travel_time = {'drone_to_object': {'Drone1': {'RoofTop1': 3.5, 'RoofTop2': 4.1, 'House1': 1.1}, 'Drone3': {'RoofTop1': 4.1, 'House1': 8.0}, 'Drone4': {'RoofTop1': 1.4, 'RoofTop2': 2.3, 'House1': 1.9}, 'Drone2': {'RoofTop2': 3.1}}, 'drone_object_to_object': {'Drone1': {'RoofTop1': {'RoofTop1': 0.0, 'RoofTop2': 3.1, 'House1': 4.5}, 'RoofTop2': {'RoofTop1': 3.1, 'RoofTop2': 0.0, 'House1': 5.0}, 'House1': {'RoofTop1': 4.5, 'RoofTop2': 5.0, 'House1': 0.0}}, 'Drone3': {'RoofTop1': {'RoofTop1': 0.0, 'House1': 5.8}, 'House1': {'RoofTop1': 5.8, 'House1': 0.0}}, 'Drone4': {'RoofTop1': {'RoofTop1': 0.0, 'RoofTop2': 2.3, 'House1': 3.3}, 'RoofTop2': {'RoofTop1': 2.3, 'RoofTop2': 0.0, 'House1': 3.7}, 'House1': {'RoofTop1': 3.3, 'RoofTop2': 3.7, 'House1': 0.0}}, 'Drone2': {'RoofTop2': {'RoofTop2': 0.0}}}}"""
+},
+{"role": "assistant", "content": """
 schedule = {
-  "same_drone_groups": [],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1"]},
-    {"name": "Round2", "subtasks": ["SubTask2"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "CaptureThermalImage", "object": "Tower"},
-    {"name": "SubTask2", "skill": "CaptureRGBImage", "object": "Tower"}
-  ]
-}
-"""
-  },
-  {
-    "role": "assistant",
-    "content": """
-# SubTask1 → No group, requires CaptureThermalImage → assigned to Drone2 (fewest skills)
-# SubTask2 → No group, requires CaptureRGBImage → assigned to Drone1 (fewest skills)
-allocated_subtasks = [
- {"name": "SubTask1", "drone": "Drone2"},
- {"name": "SubTask2", "drone": "Drone1"}
-]
-"""
-  },
+    "Drone1": [
+        {"name": "SubTask3", "object": "House1", "skill": "CaptureRGBImage", "startTime": 0, "endTime": 1.1}
+    ],
+    "Drone2": [
+        {"name": "SubTask2", "object": "RoofTop2", "skill": "CaptureThermalImage", "startTime": 0, "endTime": 3.1}
+    ],
+    "Drone4": [
+        {"name": "SubTask1", "object": "RoofTop1", "skill": "CaptureRGBImage", "startTime": 0, "endTime": 1.4}
+    ]
+}"""
+},
 
-  # ----------------------------- Example 5 -----------------------------
-  {
-    "role": "user",
-    "content": """
-fleet = {
-  "Drone1": ["CaptureThermalImage"],
-  "Drone2": ["CaptureThermalImage"],
-  "Drone3": ["CaptureRGBImage", "PickupPayload", "ReleasePayload"],
-  "Drone4": ["PickupPayload", "ReleasePayload"],
-  "Drone5": ["CaptureRGBImage", "CaptureThermalImage"]
-}
-schedule = {
-  "same_drone_groups": [
-    {"name": "Group1", "subtasks": ["SubTask1", "SubTask2"], "skills": ["PickupPayload", "ReleasePayload"]},
-    {"name": "Group2", "subtasks": ["SubTask3", "SubTask4"], "skills": ["CaptureThermalImage"]}
-  ],
-  "rounds": [
-    {"name": "Round1", "subtasks": ["SubTask1", "SubTask3"]},
-    {"name": "Round2", "subtasks": ["SubTask2", "SubTask4"]}
-  ],
-  "subtasks": [
-    {"name": "SubTask1", "skill": "PickupPayload", "object": "RoofTop1"},
-    {"name": "SubTask2", "skill": "ReleasePayload", "object": "House2"},
-    {"name": "SubTask3", "skill": "CaptureThermalImage", "object": "SolarPanel1"},
-    {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2"}
-  ]
-}
-"""
-  },
-  {
-    "role": "assistant",
-    "content": """
-# SubTask1 → Group1, union skills: [PickupPayload, ReleasePayload] → assigned to Drone4 (fewest skills with both)
-# SubTask2 → Group1 (same as SubTask1) → assigned to Drone4
-# SubTask3 → Group2, Round2 (same as SubTask1 so must use different drone), requires CaptureThermalImage → assigned to Drone1 (fewest skills)
-# SubTask4 → Group2 (same as SubTask3) → assigned to Drone1
-allocated_subtasks = [
- {"name": "SubTask1", "drone": "Drone4"},
- {"name": "SubTask2", "drone": "Drone4"},
- {"name": "SubTask3", "drone": "Drone1"},
- {"name": "SubTask4", "drone": "Drone1"}
+# Example 2 --------------------------------------------------------------------------------------------
+{"role": "user", "content": """
+subtasks_with_drones = [
+    {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "pos": (7, 13), "drones": ["Drone2", "Drone4", "Drone5"]},
+    {"name": "SubTask2", "skill": "MeasureWind", "object": "House2", "pos": (95, 64), "drones": ["Drone1", "Drone3"]},
+    {"name": "SubTask3", "skill": "MeasureWind", "object": "House3", "pos": (53, 49), "drones": ["Drone1", "Drone3"]} 
 ]
-"""
-  }
+
+travel_time = {'drone_to_object': {'Drone2': {'Tower': 4.5}, 'Drone4': {'Tower': 5.8}, 'Drone5': {'Tower': 5.2}, 'Drone1': {'House2': 3.8, 'House3': 1.1}, 'Drone3': {'House2': 5.0, 'House3': 2.7}}, 'drone_object_to_object': {'Drone2': {'Tower': {'Tower': 0.0}}, 'Drone4': {'Tower': {'Tower': 0.0}}, 'Drone5': {'Tower': {'Tower': 0.0}}, 'Drone1': {'House2': {'House2': 0.0, 'House3': 3.2}, 'House3': {'House2': 3.2, 'House3': 0.0}}, 'Drone3': {'House2': {'House2': 0.0, 'House3': 2.3}, 'House3': {'House2': 2.3, 'House3': 0.0}}}}"""
+},
+{"role": "assistant","content": """
+schedule = {
+    "Drone1": [
+        {"name": "SubTask2", "object": "House2", "skill": "MeasureWind", "startTime": 0, "endTime": 3.8}
+    ],
+    "Drone2": [
+        {"name": "SubTask1", "object": "Tower", "skill": "InspectStructure", "startTime": 0, "endTime": 4.5}
+    ],
+    "Drone3": [
+        {"name": "SubTask3", "object": "House3", "skill": "MeasureWind", "startTime": 0, "endTime": 2.7}
+    ]
+}"""
+},
+
+# Example 3 --------------------------------------------------------------------------------------------
+{"role": "user", "content": """
+subtasks_with_drones = [
+    {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "pos": (39, 2), "drones": ["Drone1"]},
+    {"name": "SubTask2", "skill": "RecordVideo", "object": "House3", "pos": (92, 44), "drones": ["Drone1"]},
+    {"name": "SubTask3", "skill": "RecordVideo", "object": "Base", "pos": (48, 99), "drones": ["Drone1"]},
+    {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "pos": (39, 2), "drones": ["Drone2", "Drone3"]},
+    {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "pos": (92, 44), "drones": ["Drone2", "Drone3"]},
+    {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "pos": (48, 99), "drones": ["Drone2", "Drone3"]}
+]
+ 
+travel_time = {'drone_to_object': {'Drone1': {'Tower': 6.9, 'House3': 5.5, 'Base': 1.3}, 'Drone2': {'Tower': 3.7, 'House3': 0.4, 'Base': 4.4}, 'Drone3': {'Tower': 2.4, 'House3': 2.5, 'Base': 6.0}}, 'drone_object_to_object': {'Drone1': {'Tower': {'Tower': 0.0, 'House3': 5.6, 'Base': 8.1}, 'House3': {'Tower': 5.6, 'House3': 0.0, 'Base': 5.9}, 'Base': {'Tower': 8.1, 'House3': 5.9, 'Base': 0.0}}, 'Drone2': {'Tower': {'Tower': 0.0, 'House3': 3.8, 'Base': 5.4}, 'House3': {'Tower': 3.8, 'House3': 0.0, 'Base': 3.9}, 'Base': {'Tower': 5.4, 'House3': 3.9, 'Base': 0.0}}, 'Drone3': {'Tower': {'Tower': 0.0, 'House3': 4.5, 'Base': 6.5}, 'House3': {'Tower': 4.5, 'House3': 0.0, 'Base': 4.7}, 'Base': {'Tower': 6.5, 'House3': 4.7, 'Base': 0.0}}}}"""
+},
+{"role": "assistant", "content": """
+schedule = {
+    "Drone1": [
+        {"name": "SubTask3", "object": "Base",   "skill": "RecordVideo", "startTime": 0.0,  "endTime": 1.3},
+        {"name": "SubTask2", "object": "House3", "skill": "RecordVideo", "startTime": 1.3,  "endTime": 7.2},  # +5.9 from Base
+        {"name": "SubTask1", "object": "Tower",  "skill": "RecordVideo", "startTime": 7.2,  "endTime": 12.8} # +5.6 from House3
+    ],
+    "Drone2": [
+        {"name": "SubTask5", "object": "House3", "skill": "CaptureRGBImage", "startTime": 0.0, "endTime": 0.4},
+        {"name": "SubTask6", "object": "Base",   "skill": "CaptureRGBImage", "startTime": 0.4, "endTime": 4.3} # +3.9 from House3
+    ],
+    "Drone3": [
+        {"name": "SubTask4", "object": "Tower",  "skill": "CaptureRGBImage", "startTime": 0.0, "endTime": 2.4}
+    ]
+}"""
+}
 ]

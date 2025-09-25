@@ -21,8 +21,8 @@ OUTPUT FORMAT:
 subtasks_with_drones = [
     {"name": <SubTaskName>, "skill": <SkillName>, "object": <ObjectName>, "pos": (<x>, <y>), "drones": [<DroneName>, ...]},
     ...
-]
-"""},
+]"""
+},
 
 # Example 1 ------------------------------------------------------------------------------------------
 {"role":"user", "content": """
@@ -45,7 +45,8 @@ subtasks_with_drones = [
     {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "pos": (78, 62), "drones": ["Drone1", "Drone2", "Drone4"]},
     {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "pos": (12, 87), "drones": ["Drone1", "Drone3", "Drone4"]}
 ]
-"""},
+"""
+},
 
 # Example 2 --------------------------------------------------------------------------------------------
 {"role":"user", "content":"""
@@ -61,14 +62,15 @@ subtasks = [
     {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "pos": (7, 13)},
     {"name": "SubTask2", "skill": "MeasureWind", "object": "House2", "pos": (95, 64)},
     {"name": "SubTask3", "skill": "MeasureWind", "object": "House3", "pos": (53, 49)} 
-]"""},
+]"""
+},
 {"role": "assistant", "content": """
 subtasks_with_drones = [
     {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "pos": (7, 13), "drones": ["Drone2", "Drone4", "Drone5"]},
     {"name": "SubTask2", "skill": "MeasureWind", "object": "House2", "pos": (95, 64), "drones": ["Drone1", "Drone3"]},
     {"name": "SubTask3", "skill": "MeasureWind", "object": "House3", "pos": (53, 49), "drones": ["Drone1", "Drone3"]} 
-]
-"""},
+]"""
+},
 
 # Example 3 --------------------------------------------------------------------------------------------
 {"role":"user", "content":"""
@@ -85,7 +87,8 @@ subtasks = [
     {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "pos": (39, 2)},
     {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "pos": (92, 44)},
     {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "pos": (48, 99)}
-]"""},
+]"""
+},
 {"role": "assistant", "content": """
 subtasks_with_drones = [
     {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "pos": (39, 2), "drones": ["Drone1"]},
@@ -95,5 +98,6 @@ subtasks_with_drones = [
     {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "pos": (92, 44), "drones": ["Drone2", "Drone3"]},
     {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "pos": (48, 99), "drones": ["Drone2", "Drone3"]}
 ]
-"""}
+"""
+}
 ]

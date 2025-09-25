@@ -32,16 +32,28 @@ def compute_travel_times(objects: dict, drones: dict):
     
     return travel_times
 
+drones = {
+  "Drone1": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (23, 77), "speed": 14},
+  "Drone2": {"skills": ["CaptureThermalImage"], "pos": (64, 12), "speed": 17},
+  "Drone3": {"skills": ["CaptureRGBImage"], "pos": (89, 45), "speed": 11},
+  "Drone4": {"skills": ["CaptureRGBImage", "CaptureThermalImage", "InspectStructure"], "pos": (35, 58), "speed": 19},
+  "Drone5": {"skills": ["RecordVideo"], "pos": (10, 91), "speed": 13}
+}
+
 objects = {
-    "Base": (18, 63),
-    "RoofTop1": (72, 9),
-    "RoofTop2": (41, 56),
-    "SolarPanel1": (85, 22),
-    "SolarPanel2": (33, 97),
-    "House1": (5, 44),
-    "House2": (92, 71),
-    "House3": (47, 36),
-    "Tower": (14, 7)
+    "House1": (12, 87),
+    "RoofTop1": (45, 33),
+    "RoofTop2": (78, 62),
+    "SolarPanel1": (9, 14),
+    "SolarPanel2": (65, 90)
+}
+'''
+objects = {
+    "House1": (12, 87),
+    "RoofTop1": (45, 33),
+    "RoofTop2": (78, 62),
+    "SolarPanel1": (9, 14),
+    "SolarPanel2": (65, 90)
 }
 
 drones = {
@@ -52,6 +64,7 @@ drones = {
   "Drone5": {"skills": ["CaptureThermalImage"], "pos": (8, 23), "speed": 11},
   "Drone6": {"skills": ["PickupPayload", "ReleasePayload"], "pos": (74, 66), "speed": 16}
 }
+'''
 
 travel_times = compute_travel_times(objects, drones)
 print(travel_times)

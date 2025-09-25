@@ -1,53 +1,16 @@
+# python -m multi_drone_task_allocation.allocation_with_coordinates.pipeline_coord
+
+# NEXT TASK: CREATE PIPELINE
+
 from multi_drone_task_allocation.allocation_with_coordinates.decomposer_coord import messages as decomposer_prompt
 from multi_drone_task_allocation.allocation_with_coordinates.drone_match_coord import messages as matcher_prompt
 from multi_drone_task_allocation.allocation_with_coordinates.allocator_coord import messages as allocator_prompt
 
-
 from multi_drone_task_allocation.allocation_with_coordinates.test_tasks_coord import tasks
+from multi_drone_task_allocation.allocation_with_coordinates.travel_time import compute_travel_times
+from multi_drone_task_allocation.allocation_with_coordinates.inference import LM
 
-import openai
 import time
-from ollama import chat
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-client = openai.OpenAI(api_key = api_key)
-
-# LM Inference
-def LM(model, messages):
-    if("gpt" in model):
-      params = {
-      "model": model,
-      "messages": messages,
-      }
-
-      if "gpt-5" not in model.lower():
-        params["temperature"] = 0.0
-        params["max_tokens"] = 1024
-
-      response = client.chat.completions.create(**params)
-      output = response.choices[0].message.content
-      print(output)
-      return output
-    
-    else:
-        response = chat(
-          model=model,
-          messages=messages,
-          stream=True,
-          options={
-              "temperature": 0.0
-          }
-        )
-
-        output = ""
-        for chunk in response:
-            content = chunk.message.content
-            print(content, end="", flush=True)
-            output += content
-        return output
 
 # Message builder --------------------------------------------------------
 def build_message(prompt, content):
@@ -86,12 +49,12 @@ objects = {
 }
 
 drones = {
-  "Drone1": {"skills": ["CaptureThermalImage", "PickupPayload", "ReleasePayload"], "pos": (27, 81), "speed": 15},
-  "Drone2": {"skills": ["PickupPayload", "ReleasePayload", "CaptureRGBImage"], "pos": (63, 14), "speed": 18},
+  "Drone1": {"skills": ["CaptureThermalImage"], "pos": (27, 81), "speed": 15},
+  "Drone2": {"skills": ["MeasureWind","CaptureRGBImage"], "pos": (63, 14), "speed": 18},
   "Drone3": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (92, 47), "speed": 12},
   "Drone4": {"skills": ["CaptureRGBImage", "RecordVideo"], "pos": (39, 59), "speed": 19},
-  "Drone5": {"skills": ["CaptureThermalImage"], "pos": (8, 23), "speed": 11},
-  "Drone6": {"skills": ["PickupPayload", "ReleasePayload"], "pos": (74, 66), "speed": 16}
+  "Drone5": {"skills": ["CaptureThermalImage", "InspectStructure"], "pos": (8, 23), "speed": 11},
+  "Drone6": {"skills": ["MeasureWind"], "pos": (74, 66), "speed": 16}
 }
 
 # Inference --------------------------------------------------------------
@@ -117,11 +80,11 @@ for task_id, user_task in list(tasks.items()):
   end_time = time.time()
   print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
-  ## Allocator
- # allocator_message = build_message(allocator_prompt, f"fleet = {fleet}\n{cleaned_scheduled_task}")
- # # print(allocator_message)
- # start_time = time.time()
- # allocated_task = LM(model=model, messages=allocator_message)
- # cleaned_allocated_task = remove_comments(allocated_task)
- # end_time = time.time()
- # print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
+ # Allocator
+ #allocator_message = build_message(allocator_prompt, f"fleet = {fleet}\n{cleaned_scheduled_task}")
+ ## print(allocator_message)
+ #start_time = time.time()
+ #allocated_task = LM(model=model, messages=allocator_message, client=client)
+ #cleaned_allocated_task = remove_comments(allocated_task)
+ #end_time = time.time()
+ #print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
