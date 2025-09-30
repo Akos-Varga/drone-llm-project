@@ -1,10 +1,9 @@
 class ScheduleValidator:
-    def __init__(self, objects, drones, travel_times):
+    def __init__(self, objects, drones):
         self.objects = objects
         self.drones = drones
-        self.travel_time = travel_times
 
-    def validate_schedule(self, schedule):
+    def validate_schedule(self, schedule, travel_time):
         # Check if drones and objects are valid
         for drone, tasks in schedule.items():
             if drone not in self.drones:
@@ -32,11 +31,11 @@ class ScheduleValidator:
                 if prevEndTime > task["startTime"]:
                     print(f"ERROR: Invalid starting time for {task["name"]}")
                     return False, 0
-                if startObject == "" and self.travel_time["drone_to_object"][drone][endObject] != round(task["endTime"] - task["startTime"], 1):
-                    print(f"ERROR: Invalid traveltime for {task["name"]}. Expected: {self.travel_time["drone_to_object"][drone][endObject]} Got: {round(task["endTime"] - task["startTime"], 1)}")
+                if startObject == "" and travel_time["drone_to_object"][drone][endObject] != round(task["endTime"] - task["startTime"], 1):
+                    print(f"ERROR: Invalid traveltime for {task["name"]}. Expected: {travel_time["drone_to_object"][drone][endObject]} Got: {round(task["endTime"] - task["startTime"], 1)}")
                     return False, 0
-                if startObject != "" and self.travel_time["drone_object_to_object"][drone][startObject][endObject] != round(task["endTime"] - task["startTime"], 1):
-                    print(f"ERROR: Invalid traveltime for {task["name"]}. Expected: {self.travel_time["drone_object_to_object"][drone][startObject][endObject]} Got: {round(task["endTime"] - task["startTime"], 1)}")
+                if startObject != "" and travel_time["drone_object_to_object"][drone][startObject][endObject] != round(task["endTime"] - task["startTime"], 1):
+                    print(f"ERROR: Invalid traveltime for {task["name"]}. Expected: {travel_time["drone_object_to_object"][drone][startObject][endObject]} Got: {round(task["endTime"] - task["startTime"], 1)}")
                     return False, 0
                 startObject = endObject
                 prevEndTime = task["endTime"]
@@ -86,13 +85,13 @@ if __name__ == "__main__":
         {"name": "SubTask5", "object": "House3", "skill": "CaptureRGBImage", "startTime": 0.0, "endTime": 0.4},
         {"name": "SubTask6", "object": "Base", "skill": "CaptureRGBImage", "startTime": 0.4, "endTime": 4.3},
         ],
-        "Drone3": [
+        "Drone0": [
         {"name": "SubTask4", "object": "Tower", "skill": "CaptureRGBImage", "startTime": 0.0, "endTime": 2.4},
         ]
     }
 
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
 
-    validator = ScheduleValidator(objects, drones, travel_times)
+    validator = ScheduleValidator(objects, drones)
 
-    print(validator.validate_schedule(schedule))
+    print(validator.validate_schedule(schedule, travel_times))

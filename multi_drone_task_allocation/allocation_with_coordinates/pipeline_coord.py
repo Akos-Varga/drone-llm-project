@@ -1,11 +1,12 @@
 # python -m multi_drone_task_allocation.allocation_with_coordinates.pipeline_coord
 
 from multi_drone_task_allocation.allocation_with_coordinates.decomposer_coord import messages as decomposer_prompt
-from multi_drone_task_allocation.allocation_with_coordinates.drone_match_coord import messages as matcher_prompt
 from multi_drone_task_allocation.allocation_with_coordinates.allocator_coord import messages as allocator_prompt
+from multi_drone_task_allocation.allocation_with_coordinates.scheduler_coord import messages as scheduler_prompt
 
 from multi_drone_task_allocation.allocation_with_coordinates.test_tasks_coord import tasks
 from multi_drone_task_allocation.allocation_with_coordinates.utils.travel_time import compute_travel_times
+from multi_drone_task_allocation.allocation_with_coordinates.utils.schedule_validator import ScheduleValidator
 from multi_drone_task_allocation.allocation_with_coordinates.utils.inference import LM
 
 import time
@@ -59,7 +60,8 @@ drones = {
 
 # Inference --------------------------------------------------------------
 model = m6
-for task_id, user_task in list(tasks.items())[6:7]:
+schedule_validator = ScheduleValidator(objects, drones)
+for task_id, user_task in list(tasks.items()):
   print(task_id + ": " + user_task)
 
   ## Decomposer
@@ -67,28 +69,28 @@ for task_id, user_task in list(tasks.items())[6:7]:
   # print(decomposer_message)
   start_time = time.time()
   decomposed_task = LM(model=model, messages=decomposer_message)
-  cleaned_decomposed_task = remove_comments(decomposed_task)
-  end_time = time.time()
-  print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
-
-  ## Matcher
-  matcher_message = build_message(matcher_prompt, f"drones = {drones}\n\nsubtasks = {cleaned_decomposed_task}")
-  # print(matcher_message)
-  start_time = time.time()
-  subtasks_with_drones_str = LM(model=model, messages=matcher_message)
-  subtasks_with_drones_str = remove_comments(subtasks_with_drones_str)
-  subtasks_with_drones = str_to_code(subtasks_with_drones_str)
-  travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
-  print(f"travel_times = {travel_times}\n\n")
+  decomposed_task = remove_comments(decomposed_task)
   end_time = time.time()
   print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
   # Allocator
-
-  allocator_message = build_message(allocator_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
+  allocator_message = build_message(allocator_prompt, f"drones = {drones}\n\nsubtasks = {decomposed_task}")
   # print(allocator_message)
   start_time = time.time()
-  allocated_task = LM(model=model, messages=allocator_message)
-  cleaned_allocated_task = remove_comments(allocated_task)
+  subtasks_with_drones_str = LM(model=model, messages=allocator_message)
+  subtasks_with_drones_str = remove_comments(subtasks_with_drones_str)
+  subtasks_with_drones = str_to_code(subtasks_with_drones_str)
+  travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
+  # print(f"travel_times = {travel_times}\n\n")
+  end_time = time.time()
+  print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
+
+  # Scheduler
+  scheduler_message = build_message(scheduler_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
+  # print(allocator_message)
+  start_time = time.time()
+  schedule_str = LM(model=model, messages=allocator_message)
+  schedule_str = remove_comments(schedule_str)
+  schedule = str_to_code(schedule_str)
   end_time = time.time()
   print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
