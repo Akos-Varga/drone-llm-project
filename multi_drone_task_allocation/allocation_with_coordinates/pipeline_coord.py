@@ -1,16 +1,15 @@
 # python -m multi_drone_task_allocation.allocation_with_coordinates.pipeline_coord
 
-# NEXT TASK: CREATE PIPELINE
-
 from multi_drone_task_allocation.allocation_with_coordinates.decomposer_coord import messages as decomposer_prompt
 from multi_drone_task_allocation.allocation_with_coordinates.drone_match_coord import messages as matcher_prompt
 from multi_drone_task_allocation.allocation_with_coordinates.allocator_coord import messages as allocator_prompt
 
 from multi_drone_task_allocation.allocation_with_coordinates.test_tasks_coord import tasks
-from multi_drone_task_allocation.allocation_with_coordinates.travel_time import compute_travel_times
-from multi_drone_task_allocation.allocation_with_coordinates.inference import LM
+from multi_drone_task_allocation.allocation_with_coordinates.utils.travel_time import compute_travel_times
+from multi_drone_task_allocation.allocation_with_coordinates.utils.inference import LM
 
 import time
+import ast
 
 # Message builder --------------------------------------------------------
 def build_message(prompt, content):
@@ -22,8 +21,9 @@ def remove_comments(commented_text):
      lines = commented_text.splitlines(keepends = True)
      return "".join(line for line in lines if not line.lstrip().startswith("#") and line.strip())
 
-def get_groups(text):
-    return text[text.index("groups ="):]
+def str_to_code(str: str):
+    rhs = str.split('=', 1)[1].strip()
+    return ast.literal_eval(rhs)
 
 # Models -----------------------------------------------------------------
 m1 = "qwen2.5-coder:1.5b"
@@ -34,14 +34,14 @@ m5 = "gpt-4o-mini"
 m6 = "gpt-5-mini"
 
 # Actions & Objects and & Drones ------------------------------------------------------------
-actions = ["RecordVideo", "CaptureRGBImage", "CaptureThermalImage", "PickupPayload", "ReleasePayload"]
+actions = ["RecordVideo", "CaptureRGBImage", "CaptureThermalImage", "MeasureWind", "InspectStructure"]
 
 objects = {
     "Base": (18, 63),
     "RoofTop1": (72, 9),
     "RoofTop2": (41, 56),
     "SolarPanel1": (85, 22),
-    "SolarPanel2": (33, 97),
+    "SolarPanel2": (87, 20),
     "House1": (5, 44),
     "House2": (92, 71),
     "House3": (47, 36),
@@ -58,11 +58,12 @@ drones = {
 }
 
 # Inference --------------------------------------------------------------
-model = m6
-for task_id, user_task in list(tasks.items()):
+model = m4
+for task_id, user_task in list(tasks.items())[3:]:
   print(task_id + ": " + user_task)
+
   ## Decomposer
-  decomposer_message = build_message(decomposer_prompt, f"Task: {user_task}\n\nAllowed actions: {actions}\n\nAllowed objects: {objects}")
+  decomposer_message = build_message(decomposer_prompt, f"task = {user_task}\n\nactions = {actions}\n\nobjects = {objects}")
   # print(decomposer_message)
   start_time = time.time()
   decomposed_task = LM(model=model, messages=decomposer_message)
@@ -71,20 +72,23 @@ for task_id, user_task in list(tasks.items()):
   print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
   ## Matcher
-  groups = get_groups(cleaned_decomposed_task)
-  matcher_message = build_message(matcher_prompt, f"drones = {drones}\n\n{groups}")
+  matcher_message = build_message(matcher_prompt, f"drones = {drones}\n\nsubtasks = {cleaned_decomposed_task}")
   # print(matcher_message)
   start_time = time.time()
-  matched_task = LM(model=model, messages=matcher_message)
-  cleaned_matched_task = remove_comments(matched_task)
+  subtasks_with_drones_str = LM(model=model, messages=matcher_message)
+  subtasks_with_drones_str = remove_comments(subtasks_with_drones_str)
+  subtasks_with_drones = str_to_code(subtasks_with_drones_str)
+  travel_times = compute_travel_times(subtasks_with_drones, drones)
+  print(f"travel_times = {travel_times}\n\n")
   end_time = time.time()
   print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
- # Allocator
- #allocator_message = build_message(allocator_prompt, f"fleet = {fleet}\n{cleaned_scheduled_task}")
- ## print(allocator_message)
- #start_time = time.time()
- #allocated_task = LM(model=model, messages=allocator_message, client=client)
- #cleaned_allocated_task = remove_comments(allocated_task)
- #end_time = time.time()
- #print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
+  # Allocator
+
+  allocator_message = build_message(allocator_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
+  # print(allocator_message)
+  start_time = time.time()
+  allocated_task = LM(model=model, messages=allocator_message)
+  cleaned_allocated_task = remove_comments(allocated_task)
+  end_time = time.time()
+  print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)

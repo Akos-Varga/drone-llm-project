@@ -1,4 +1,4 @@
-from drone_visualizer import DroneVisualizer
+from multi_drone_task_allocation.drone_vis.drone_visualizer import DroneVisualizer
 import matplotlib.pyplot as plt
 import os
 
@@ -37,11 +37,11 @@ schedule = {
         {"object": "House3", "skill": "RecordVideo", "startTime": 0, "endTime": 3},
         {"object": "Base", "skill": "RecordVideo", "startTime": 3.5, "endTime": 7.5},
     ],
-    "Drone5": [{"object": "Tower", "skill": "CaptureThermalImage", "startTime": 0, "endTime": 5}],
-    "Drone6": [
-        {"object": "Base", "skill": "PickupPayload", "startTime": 1, "endTime": 5},
-        {"object": "House1", "skill": "ReleasePayload", "startTime": 5.5, "endTime": 9.5},
-    ],
+    # "Drone5": [{"object": "Tower", "skill": "CaptureThermalImage", "startTime": 0, "endTime": 5}],
+    # "Drone6": [
+    #     {"object": "Base", "skill": "PickupPayload", "startTime": 1, "endTime": 5},
+    #     {"object": "House1", "skill": "ReleasePayload", "startTime": 5.5, "endTime": 9.5},
+    # ],
 }
 
 schedule2 = {

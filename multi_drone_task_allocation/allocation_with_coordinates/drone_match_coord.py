@@ -8,7 +8,7 @@ drones = {
 }        
 
 subtasks = [
-    {"name": <SubTaskName>, "skill": <SkillName>, "object": <ObjectName>, "pos": (<x>, <y>)},
+    {"name": <SubTaskName>, "skill": <SkillName>, "object": <ObjectName>},
     ...
 ]
              
@@ -19,7 +19,7 @@ CONSTRAINTS:
 
 OUTPUT FORMAT:
 subtasks_with_drones = [
-    {"name": <SubTaskName>, "skill": <SkillName>, "object": <ObjectName>, "pos": (<x>, <y>), "drones": [<DroneName>, ...]},
+    {"name": <SubTaskName>, "skill": <SkillName>, "object": <ObjectName>, "drones": [<DroneName>, ...]},
     ...
 ]"""
 },
@@ -35,15 +35,15 @@ drones = {
 }
 
 subtasks = [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "pos": (45, 33)},
-    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "pos": (78, 62)},
-    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "pos": (12, 87)}
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1"},
+    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2"},
+    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1"}
 ]"""},
 {"role": "assistant", "content": """
 subtasks_with_drones = [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "pos": (45, 33), "drones": ["Drone1", "Drone3", "Drone4"]},
-    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "pos": (78, 62), "drones": ["Drone1", "Drone2", "Drone4"]},
-    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "pos": (12, 87), "drones": ["Drone1", "Drone3", "Drone4"]}
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "drones": ["Drone1", "Drone3", "Drone4"]},
+    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "drones": ["Drone1", "Drone2", "Drone4"]},
+    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "drones": ["Drone1", "Drone3", "Drone4"]}
 ]
 """
 },
@@ -59,16 +59,16 @@ drones = {
 }
 
 subtasks = [
-    {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "pos": (7, 13)},
-    {"name": "SubTask2", "skill": "MeasureWind", "object": "House2", "pos": (95, 64)},
-    {"name": "SubTask3", "skill": "MeasureWind", "object": "House3", "pos": (53, 49)} 
+    {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower"},
+    {"name": "SubTask2", "skill": "MeasureWind", "object": "House2"},
+    {"name": "SubTask3", "skill": "MeasureWind", "object": "House3"} 
 ]"""
 },
 {"role": "assistant", "content": """
 subtasks_with_drones = [
-    {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "pos": (7, 13), "drones": ["Drone2", "Drone4", "Drone5"]},
-    {"name": "SubTask2", "skill": "MeasureWind", "object": "House2", "pos": (95, 64), "drones": ["Drone1", "Drone3"]},
-    {"name": "SubTask3", "skill": "MeasureWind", "object": "House3", "pos": (53, 49), "drones": ["Drone1", "Drone3"]} 
+    {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "drones": ["Drone2", "Drone4", "Drone5"]},
+    {"name": "SubTask2", "skill": "MeasureWind", "object": "House2", "drones": ["Drone1", "Drone3"]},
+    {"name": "SubTask3", "skill": "MeasureWind", "object": "House3", "drones": ["Drone1", "Drone3"]} 
 ]"""
 },
 
@@ -81,22 +81,22 @@ drones = {
 }
  
 subtasks = [
-    {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "pos": (39, 2)},
-    {"name": "SubTask2", "skill": "RecordVideo", "object": "House3", "pos": (92, 44)},
-    {"name": "SubTask3", "skill": "RecordVideo", "object": "Base", "pos": (48, 99)},
-    {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "pos": (39, 2)},
-    {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "pos": (92, 44)},
-    {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "pos": (48, 99)}
+    {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower"},
+    {"name": "SubTask2", "skill": "RecordVideo", "object": "House3"},
+    {"name": "SubTask3", "skill": "RecordVideo", "object": "Base"},
+    {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower"},
+    {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3"},
+    {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base"}
 ]"""
 },
 {"role": "assistant", "content": """
 subtasks_with_drones = [
-    {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "pos": (39, 2), "drones": ["Drone1"]},
-    {"name": "SubTask2", "skill": "RecordVideo", "object": "House3", "pos": (92, 44), "drones": ["Drone1"]},
-    {"name": "SubTask3", "skill": "RecordVideo", "object": "Base", "pos": (48, 99), "drones": ["Drone1"]},
-    {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "pos": (39, 2), "drones": ["Drone2", "Drone3"]},
-    {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "pos": (92, 44), "drones": ["Drone2", "Drone3"]},
-    {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "pos": (48, 99), "drones": ["Drone2", "Drone3"]}
+    {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "drones": ["Drone1"]},
+    {"name": "SubTask2", "skill": "RecordVideo", "object": "House3", "drones": ["Drone1"]},
+    {"name": "SubTask3", "skill": "RecordVideo", "object": "Base", "drones": ["Drone1"]},
+    {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "drones": ["Drone2", "Drone3"]},
+    {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "drones": ["Drone2", "Drone3"]},
+    {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "drones": ["Drone2", "Drone3"]}
 ]
 """
 }

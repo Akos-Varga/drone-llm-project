@@ -19,44 +19,13 @@ class DroneVisualizer:
         # Current positions begin at start positions and will persist across schedules
         self._current_positions: Dict[str, Tuple[float, float]] = dict(self._start_positions) # Make a copy of _start_positions at the beginning
 
-        # Figure / axes
-        self.fig, self.ax = plt.subplots(figsize=(6, 6))
-        self.ax.set_xlim(0, world_size * 1.1)
-        self.ax.set_ylim(0, world_size * 1.1)
-        self.ax.set_aspect('equal', adjustable='box')
-        self.ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.3)
-        self.ax.set_title("Drone & Object Map")
-        self.time_text = self.ax.text(0.02, 1.02, "", transform=self.ax.transAxes, va="bottom")
-
-        # Objects as circles + labels
-        self.object_patches: Dict[str, Circle] = {}
-        object_colors = self._assign_colors(list(objects.keys()))
-        for i, (name, (x, y)) in enumerate(objects.items()):
-            c = Circle((x, y), radius=2.0, alpha=0.6, ec="black", fc=object_colors[i])
-            self.ax.add_patch(c)
-            self.ax.text(x - 5.0, y - 5.0, name, fontsize=8)
-            self.object_patches[name] = c
-
-        # Drones as circles + labels (multi-line: name + current task)
-        self.drone_patches: Dict[str, Circle] = {}
-        self.drone_labels: Dict[str, Any] = {}
-        drone_colors = self._assign_colors(list(drones.keys()))
-        for i, (name, info) in enumerate(drones.items()):
-            x, y = self._current_positions[name]
-            c = Circle((x, y), radius=1.5, alpha=0.9, ec="black", fc=drone_colors[i])
-            self.ax.add_patch(c)
-            lbl = self.ax.text(
-                x + 1.8, y + 1.8,
-                f"{name}\nIdle",
-                fontsize=8, fontweight="bold", linespacing=1.3
-            )
-            self.drone_patches[name] = c
-            self.drone_labels[name] = lbl
-
+        #self.fig, self.ax = plt.subplots(figsize=(6, 6))
         self._segments: Dict[str, List[Dict[str, Any]]] = {}
         self.total_time: float = 0.0
         self._dt: float = 0.1
         self._anim: Optional[FuncAnimation] = None
+        self.scheduled_objects = {}
+        self.scheduled_drones = {}
 
     def _assign_colors(self, names: List[str]) -> List[str]:
         palette = [
@@ -183,7 +152,15 @@ class DroneVisualizer:
 
     def set_schedule(self, schedule: Dict[str, List[Dict[str, Any]]]):
         # If there were previous segments, ensure we start from their final positions
+        self.scheduled_objects = {}
+        self.scheduled_drones = {}
+        for drone, tasks in schedule.items():
+            self.scheduled_drones[drone] = self.drones[drone]
+            for task in tasks:
+                self.scheduled_objects[task["object"]] = self.objects[task["object"]]
+
         self._build_segments(schedule)
+
 
     def animate(self, dt: float = 0.1, extra_hold: float = 2.0, save_path: Optional[str] = None):
         """
@@ -194,6 +171,40 @@ class DroneVisualizer:
         self._dt = dt
         total = self.total_time + float(extra_hold)
         frames = int(total / dt) + 1
+
+        self.fig, self.ax = plt.subplots(figsize=(6, 6))
+        self.ax.clear()
+        self.ax.set_xlim(0, self.world_size * 1.1)
+        self.ax.set_ylim(0, self.world_size * 1.1)
+        self.ax.set_aspect('equal', adjustable='box')
+        self.ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.3)
+        self.ax.set_title("Drone & Object Map")
+        self.time_text = self.ax.text(0.02, 1.02, "", transform=self.ax.transAxes, va="bottom")
+
+        # Objects as circles + labels
+        self.object_patches: Dict[str, Circle] = {}
+        object_colors = self._assign_colors(list(self.scheduled_objects.keys()))
+        for i, (name, (x, y)) in enumerate(self.scheduled_objects.items()):
+            c = Circle((x, y), radius=2.0, alpha=0.6, ec="black", fc=object_colors[i])
+            self.ax.add_patch(c)
+            self.ax.text(x - 5.0, y - 5.0, name, fontsize=8)
+            self.object_patches[name] = c
+
+        # Drones as circles + labels (multi-line: name + current task)
+        self.drone_patches: Dict[str, Circle] = {}
+        self.drone_labels: Dict[str, Any] = {}
+        drone_colors = self._assign_colors(list(self.scheduled_drones.keys()))
+        for i, (name, _) in enumerate(self.scheduled_drones.items()):
+            x, y = self._current_positions[name]
+            c = Circle((x, y), radius=1.5, alpha=0.9, ec="black", fc=drone_colors[i])
+            self.ax.add_patch(c)
+            lbl = self.ax.text(
+                x + 1.8, y + 1.8,
+                f"{name}\nIdle",
+                fontsize=8, fontweight="bold", linespacing=1.3
+            )
+            self.drone_patches[name] = c
+            self.drone_labels[name] = lbl
 
         def _update(frame_idx: int):
             t = frame_idx * dt
