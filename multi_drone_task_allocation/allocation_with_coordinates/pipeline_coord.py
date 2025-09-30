@@ -58,8 +58,8 @@ drones = {
 }
 
 # Inference --------------------------------------------------------------
-model = m4
-for task_id, user_task in list(tasks.items())[3:]:
+model = m6
+for task_id, user_task in list(tasks.items())[6:7]:
   print(task_id + ": " + user_task)
 
   ## Decomposer
@@ -78,7 +78,7 @@ for task_id, user_task in list(tasks.items())[3:]:
   subtasks_with_drones_str = LM(model=model, messages=matcher_message)
   subtasks_with_drones_str = remove_comments(subtasks_with_drones_str)
   subtasks_with_drones = str_to_code(subtasks_with_drones_str)
-  travel_times = compute_travel_times(subtasks_with_drones, drones)
+  travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
   print(f"travel_times = {travel_times}\n\n")
   end_time = time.time()
   print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
