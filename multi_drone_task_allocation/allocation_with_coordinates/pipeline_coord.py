@@ -1,13 +1,22 @@
 # python -m multi_drone_task_allocation.allocation_with_coordinates.pipeline_coord
 
-from multi_drone_task_allocation.allocation_with_coordinates.decomposer_coord import messages as decomposer_prompt
-from multi_drone_task_allocation.allocation_with_coordinates.allocator_coord import messages as allocator_prompt
-from multi_drone_task_allocation.allocation_with_coordinates.scheduler_coord import messages as scheduler_prompt
+# from multi_drone_task_allocation.allocation_with_coordinates.decomposer_coord import messages as decomposer_prompt
+# from multi_drone_task_allocation.allocation_with_coordinates.allocator_coord import messages as allocator_prompt
+# from multi_drone_task_allocation.allocation_with_coordinates.scheduler_coord import messages as scheduler_prompt
+# 
+# from multi_drone_task_allocation.allocation_with_coordinates.test_tasks_coord import tasks
+# from multi_drone_task_allocation.allocation_with_coordinates.utils.travel_time import compute_travel_times
+# from multi_drone_task_allocation.allocation_with_coordinates.utils.schedule_validator import ScheduleValidator
+# from multi_drone_task_allocation.allocation_with_coordinates.utils.inference import LM
 
-from multi_drone_task_allocation.allocation_with_coordinates.test_tasks_coord import tasks
-from multi_drone_task_allocation.allocation_with_coordinates.utils.travel_time import compute_travel_times
-from multi_drone_task_allocation.allocation_with_coordinates.utils.schedule_validator import ScheduleValidator
-from multi_drone_task_allocation.allocation_with_coordinates.utils.inference import LM
+from decomposer_coord import messages as decomposer_prompt
+from allocator_coord import messages as allocator_prompt
+from scheduler_coord import messages as scheduler_prompt
+
+from test_tasks_coord import tasks
+from utils.travel_time import compute_travel_times
+from utils.schedule_validator import ScheduleValidator
+from utils.inference import LM
 
 import time
 import ast
@@ -23,8 +32,11 @@ def remove_comments(commented_text):
      return "".join(line for line in lines if not line.lstrip().startswith("#") and line.strip())
 
 def str_to_code(str: str):
-    rhs = str.split('=', 1)[1].strip()
-    return ast.literal_eval(rhs)
+    try:
+      rhs = str.split('=', 1)[1].strip()
+      return ast.literal_eval(rhs)
+    except (SyntaxError, ValueError):
+        return None
 
 # Models -----------------------------------------------------------------
 m1 = "qwen2.5-coder:1.5b"
@@ -59,38 +71,49 @@ drones = {
 }
 
 # Inference --------------------------------------------------------------
-model = m6
+model = m5
 schedule_validator = ScheduleValidator(objects, drones)
 for task_id, user_task in list(tasks.items()):
-  print(task_id + ": " + user_task)
+  # print(task_id + ": " + user_task)
 
   ## Decomposer
   decomposer_message = build_message(decomposer_prompt, f"task = {user_task}\n\nactions = {actions}\n\nobjects = {objects}")
   # print(decomposer_message)
   start_time = time.time()
-  decomposed_task = LM(model=model, messages=decomposer_message)
+  decomposed_task = LM(model=model, messages=decomposer_message, printing=True)
   decomposed_task = remove_comments(decomposed_task)
   end_time = time.time()
-  print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
+  # print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
   # Allocator
   allocator_message = build_message(allocator_prompt, f"drones = {drones}\n\nsubtasks = {decomposed_task}")
   # print(allocator_message)
   start_time = time.time()
-  subtasks_with_drones_str = LM(model=model, messages=allocator_message)
+  subtasks_with_drones_str = LM(model=model, messages=allocator_message, printing=False)
   subtasks_with_drones_str = remove_comments(subtasks_with_drones_str)
   subtasks_with_drones = str_to_code(subtasks_with_drones_str)
+  if subtasks_with_drones == None:
+      print(f"{task_id}: subtasks_with_drones conversion failed\n\n{subtasks_with_drones_str}\n\n" + "="*90)
+      continue
   travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
   # print(f"travel_times = {travel_times}\n\n")
   end_time = time.time()
-  print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
+  # print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 
   # Scheduler
   scheduler_message = build_message(scheduler_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
   # print(allocator_message)
   start_time = time.time()
-  schedule_str = LM(model=model, messages=scheduler_message)
+  schedule_str = LM(model=model, messages=scheduler_message, printing=True)
   schedule_str = remove_comments(schedule_str)
   schedule = str_to_code(schedule_str)
+  if schedule == None:
+      print(f"{task_id}: Schedule conversion failed.\n\n{schedule_str}\n\n" + "="*90)
+      continue
+  valid, maxTime = schedule_validator.validate_schedule(schedule, travel_times)
+  if valid:
+      print(f"{task_id}: VALID, completion time {maxTime}")
+  else:
+      print(f"{task_id}: INVALID\n\nTask:{user_task}\n\nDecomposed task: {decomposed_task}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}\n\n" + "="*90)
   end_time = time.time()
-  print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
+  # print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)

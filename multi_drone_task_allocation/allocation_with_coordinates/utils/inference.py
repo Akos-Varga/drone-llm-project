@@ -7,7 +7,7 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key = api_key)
 
-def LM(model, messages):
+def LM(model, messages, printing):
     if("gpt" in model):
       params = {
       "model": model,
@@ -20,24 +20,27 @@ def LM(model, messages):
 
       response = client.chat.completions.create(**params)
       output = response.choices[0].message.content
-      print(output)
+      if printing:
+         print(output)
       return output
     
     else:
         response = chat(
           model=model,
           messages=messages,
-          stream=True,
+          stream=True if printing else False,
           options={
               "temperature": 0.0
           }
         )
-
         output = ""
-        for chunk in response:
-            content = chunk.message.content
-            print(content, end="", flush=True)
-            output += content
+        if printing:
+          for chunk in response:
+              content = chunk.message.content
+              print(content, end="", flush=True)
+              output += content
+        else:
+           output = response.message.content
         return output
     
 if __name__ == "__main__":
@@ -50,5 +53,7 @@ if __name__ == "__main__":
     m6 = "gpt-5-mini"
 
     message = [{"role": "user", "content": "Tell me a joke."}]
-
-    LM(model=m4, messages=message)
+    printing = False
+    resp = LM(model=m5, messages=message, printing=printing)
+    if not printing:
+       print(resp)
