@@ -27,7 +27,9 @@ def str_to_code(s):
       if s.endswith("```"):
             s = s[:s.rfind("```")].strip()
       rhs = s.split('=',1)[1]
+      rhs = "\n".join(line.split("#", 1)[0] for line in rhs.splitlines())
       # print(repr(rhs))
+
       return ast.literal_eval(rhs)
     except (SyntaxError, ValueError):
         return None
@@ -65,7 +67,7 @@ drones = {
 }
 
 # Inference --------------------------------------------------------------
-model = m6
+model = m5
 schedule_validator = ScheduleValidator(objects, drones)
 for task in task_list:
   print("="*90 + f"\n{task["id"]}: {task["task"]}")
@@ -100,7 +102,7 @@ for task in task_list:
 
   # Scheduler
   scheduler_message = build_message(scheduler_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
-  # print(allocator_message)
+  # print(scheduler_message)
   schedule_str = LM(model=model, messages=scheduler_message, printing=False)
   schedule_str = remove_comments(schedule_str)
   schedule = str_to_code(schedule_str)
@@ -109,6 +111,6 @@ for task in task_list:
       continue
   valid, maxTime = schedule_validator.validate_schedule(schedule, travel_times, subtasks_with_drones)
   if valid:
-      print(f"\n\nVALID schedule, completion time: {maxTime}")
+      print(f"\n\nVALID schedule, completion time: {maxTime}\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
   else:
       print(f"\n\nINVALID schedule\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")

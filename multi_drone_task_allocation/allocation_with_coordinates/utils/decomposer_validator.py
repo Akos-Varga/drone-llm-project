@@ -9,7 +9,7 @@ def validate_decomposer(decomposed_task, solution):
     if expected_names != actual_names:
         return False
     
-    # Check if 
+    # Check if skill and objects are the same
     expected_set = {(s["skill"], s["object"]) for s in solution}
     actual_set = {(s["skill"], s["object"]) for s in decomposed_task}
     return expected_set == actual_set

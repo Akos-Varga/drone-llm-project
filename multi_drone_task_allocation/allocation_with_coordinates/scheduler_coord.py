@@ -11,19 +11,15 @@ subtasks_with_drones = [
 travel_times = {'drone_to_object':  {<DroneName>: {<ArrivalObjectName>: <TravelTime>, ...}, ...}, 'drone_object_to_object': {<DroneName>:{<DepartureObjectName>: {<ArrivalObjectName>: <TravelTime>, ...}, ...}, ...}}
 
 CONSTRAINTS:
-1) Assign each subtask exactly once, and only to a drone listed in its "drones" field.
-2) Each scheduled entry must use the subtask’s exact "skill" and "object".
-3) Tasks are instantaneous on arrival: no service time at the object.
-4) Time semantics:
-   a) startTime is the departure time from the drone’s current location; startTime >= 0 (0 by default; waiting allowed).
+1) Assign each subtask EXACTLY ONCE, and only to a drone listed in its "drones" field.
+2) Tasks are instantaneous on arrival: no service time at the object.
+3) Time semantics:
+   a) startTime is the departure time from the drone’s current location; startTime >= 0.
    b) endTime is the arrival time at the task’s object.
    c) First task: endTime - startTime == travel_time['drone_to_object'][Drone][Object].
-   d) For consecutive tasks from object A to B on the same drone:
-      - startTime(next) >= endTime(prev)
-      - endTime(next) - startTime(next) == travel_time['drone_object_to_object'][Drone][A][B]
-   e) Use the provided self-travel time when A == B (often 0.0).
-5) Capacity: no overlapping intervals on the same drone. Intervals are half-open [startTime, endTime).
-6) Objective: minimize makespan (max over all endTime).
+   d) For consecutive tasks from object A to B on the same drone: endTime(next) - startTime(next) == travel_time['drone_object_to_object'][Drone][A][B]
+4) No overlapping intervals on the same drone. Intervals are half-open [startTime, endTime).
+5) Objective: minimize makespan (max over all endTime).
 
 OUTPUT FORMAT:
 schedule = {
