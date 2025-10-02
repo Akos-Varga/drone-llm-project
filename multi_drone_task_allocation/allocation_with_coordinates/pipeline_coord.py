@@ -89,7 +89,7 @@ for task_id, user_task in list(tasks.items()):
   scheduler_message = build_message(scheduler_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
   # print(allocator_message)
   start_time = time.time()
-  schedule_str = LM(model=model, messages=allocator_message)
+  schedule_str = LM(model=model, messages=scheduler_message)
   schedule_str = remove_comments(schedule_str)
   schedule = str_to_code(schedule_str)
   end_time = time.time()
