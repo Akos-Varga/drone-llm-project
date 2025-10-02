@@ -1,19 +1,8 @@
-# python -m multi_drone_task_allocation.allocation_with_coordinates.pipeline_coord
-
-# from multi_drone_task_allocation.allocation_with_coordinates.decomposer_coord import messages as decomposer_prompt
-# from multi_drone_task_allocation.allocation_with_coordinates.allocator_coord import messages as allocator_prompt
-# from multi_drone_task_allocation.allocation_with_coordinates.scheduler_coord import messages as scheduler_prompt
-# 
-# from multi_drone_task_allocation.allocation_with_coordinates.test_tasks_coord import tasks
-# from multi_drone_task_allocation.allocation_with_coordinates.utils.travel_time import compute_travel_times
-# from multi_drone_task_allocation.allocation_with_coordinates.utils.schedule_validator import ScheduleValidator
-# from multi_drone_task_allocation.allocation_with_coordinates.utils.inference import LM
-
 from decomposer_coord import messages as decomposer_prompt
 from allocator_coord import messages as allocator_prompt
 from scheduler_coord import messages as scheduler_prompt
 
-from test_tasks_coord import tasks
+from multi_drone_task_allocation.allocation_with_coordinates.utils.test_tasks import tasks
 from utils.travel_time import compute_travel_times
 from utils.schedule_validator import ScheduleValidator
 from utils.inference import LM
@@ -26,7 +15,7 @@ def build_message(prompt, content):
      # print(content)
      return [*prompt, {"role": "user", "content": content}]
 
-# Formatting functions ---------------------------------------------------
+# Helpers  ---------------------------------------------------
 def remove_comments(commented_text):
      lines = commented_text.splitlines(keepends = True)
      return "".join(line for line in lines if not line.lstrip().startswith("#") and line.strip())
@@ -83,6 +72,7 @@ for task_id, user_task in list(tasks.items()):
   decomposed_task = LM(model=model, messages=decomposer_message, printing=True)
   decomposed_task = remove_comments(decomposed_task)
   end_time = time.time()
+  print("="*90)
   # print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
 '''
   # Allocator
