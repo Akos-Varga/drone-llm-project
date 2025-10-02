@@ -4,6 +4,6 @@ voxl2
 __pycache__/
 check_token_num.py
 gpu_specs.py
-multi_drone_task_allocation\allocation_with_coordinates\drone_vis\saved_gifs
-multi_drone_task_allocation\allocation_with_coordinates\old
-multi_drone_task_allocation\allocation_with_dependencies
+multi_drone_task_allocation/allocation_with_coordinates/utils/saved_gifs/
+multi_drone_task_allocation/allocation_with_coordinates/old/
+multi_drone_task_allocation/allocation_with_dependencies/
