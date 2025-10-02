@@ -1,8 +1,4 @@
-def validate_decomposer(id, decomposed_task, task_list):
-    solution = None
-    for t in task_list:
-        if t["id"] == id:
-            solution = t["solution"]
+def validate_decomposer(decomposed_task, solution):
     # Check number of entries are the same
     if len(solution) != len(decomposed_task):
         return False
@@ -19,7 +15,13 @@ def validate_decomposer(id, decomposed_task, task_list):
     return expected_set == actual_set
 
 if __name__ == "__main__":
-    from test_tasks import task_list
+    solution = [
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "SolarPanel1"},
+    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "SolarPanel1"},
+    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "SolarPanel2"},
+    {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2"},
+    {"name": "SubTask5", "skill": "CaptureThermalImage", "object": "SolarPanel2"}
+    ]
     subtasks = [
     {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "SolarPanel1"},
     {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "SolarPanel1"},
@@ -27,4 +29,4 @@ if __name__ == "__main__":
     {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2"},
     {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2"}
     ]
-    print(validate_decomposer("Task6", subtasks, task_list))
+    print(validate_decomposer(subtasks,solution))
