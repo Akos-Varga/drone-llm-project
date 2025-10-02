@@ -3,7 +3,7 @@ class ScheduleValidator:
         self.objects = objects
         self.drones = drones
 
-    def validate_schedule(self, schedule, travel_times):
+    def validate_schedule(self, schedule, travel_times, subtasks_with_drones):
         # Check if drones and objects are valid
         for drone, tasks in schedule.items():
             if drone not in self.drones:
@@ -14,15 +14,18 @@ class ScheduleValidator:
                     print(f"ERROR: Object: {task["object"]} is invalid in {task["name"]}")
                     return False, 0
 
-        # Check if schedule has all subtasks      
+        # Check if schedule has all subtasks ONCE   
         for subtask_allocator in subtasks_with_drones:
-            found = False
+            found = 0
             for _, info in schedule.items():
                 for subtask_schedule in info:
                     if subtask_allocator["name"] == subtask_schedule["name"]:
-                        found = True
-            if not found:
+                        found +=1
+            if found == 0:
                 print(f"ERROR: {subtask_allocator["name"]} is not found in schedule.")
+                return False, 0
+            if found > 1:
+                print(f"ERROR: {subtask_allocator["name"]} is found multiple times in the schedule.")
                 return False, 0
 
         # Check if drone has skill 
@@ -90,7 +93,7 @@ if __name__ == "__main__":
         "Drone1": [
         {"name": "SubTask3", "object": "Base", "skill": "RecordVideo", "startTime": 0.0, "endTime": 1.3},
         {"name": "SubTask2", "object": "House3", "skill": "RecordVideo", "startTime": 1.3, "endTime": 7.2},
-        # {"name": "SubTask1", "object": "Tower", "skill": "RecordVideo", "startTime": 7.2, "endTime": 12.8},
+        {"name": "SubTask1", "object": "Tower", "skill": "RecordVideo", "startTime": 7.2, "endTime": 12.8},
         ],
         "Drone2": [
         {"name": "SubTask5", "object": "House3", "skill": "CaptureRGBImage", "startTime": 0.0, "endTime": 0.4},
@@ -105,4 +108,4 @@ if __name__ == "__main__":
 
     validator = ScheduleValidator(objects, drones)
 
-    print(validator.validate_schedule(schedule, travel_times))
+    print(validator.validate_schedule(schedule, travel_times, subtasks_with_drones))

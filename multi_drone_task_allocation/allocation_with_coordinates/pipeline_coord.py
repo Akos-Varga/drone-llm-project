@@ -71,10 +71,10 @@ drones = {
 }
 
 # Inference --------------------------------------------------------------
-model = m5
+model = m6
 schedule_validator = ScheduleValidator(objects, drones)
 for task_id, user_task in list(tasks.items()):
-  # print(task_id + ": " + user_task)
+  print(f"{task_id}: {user_task}\n\n")
 
   ## Decomposer
   decomposer_message = build_message(decomposer_prompt, f"task = {user_task}\n\nactions = {actions}\n\nobjects = {objects}")
@@ -84,7 +84,7 @@ for task_id, user_task in list(tasks.items()):
   decomposed_task = remove_comments(decomposed_task)
   end_time = time.time()
   # print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
-
+'''
   # Allocator
   allocator_message = build_message(allocator_prompt, f"drones = {drones}\n\nsubtasks = {decomposed_task}")
   # print(allocator_message)
@@ -110,10 +110,12 @@ for task_id, user_task in list(tasks.items()):
   if schedule == None:
       print(f"{task_id}: Schedule conversion failed.\n\n{schedule_str}\n\n" + "="*90)
       continue
-  valid, maxTime = schedule_validator.validate_schedule(schedule, travel_times)
+  valid, maxTime = schedule_validator.validate_schedule(schedule, travel_times, subtasks_with_drones)
   if valid:
       print(f"{task_id}: VALID, completion time {maxTime}")
   else:
       print(f"{task_id}: INVALID\n\nTask:{user_task}\n\nDecomposed task: {decomposed_task}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}\n\n" + "="*90)
   end_time = time.time()
   # print(f"\n--- Inference Time: {end_time - start_time:.2f} seconds ---\n" + "="*90)
+
+  '''
