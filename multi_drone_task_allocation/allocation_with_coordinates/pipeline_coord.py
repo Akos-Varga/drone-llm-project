@@ -8,7 +8,6 @@ from utils.schedule_validator import ScheduleValidator
 from utils.decomposer_validator import validate_decomposer
 from utils.inference import LM
 
-import time
 import ast
 
 # Message builder --------------------------------------------------------
@@ -69,7 +68,7 @@ drones = {
 # Inference --------------------------------------------------------------
 model = m5
 schedule_validator = ScheduleValidator(objects, drones)
-for task in task_list:
+for task in task_list[:3]:
   print("="*90 + f"\n{task["id"]}: {task["task"]}")
 
   ## Decomposer
@@ -103,8 +102,8 @@ for task in task_list:
   # Scheduler
   scheduler_message = build_message(scheduler_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
   # print(scheduler_message)
-  schedule_str = LM(model=model, messages=scheduler_message, printing=False)
-  schedule_str = remove_comments(schedule_str)
+  schedule_str_comments = LM(model=model, messages=scheduler_message, printing=False)
+  schedule_str = remove_comments(schedule_str_comments)
   schedule = str_to_code(schedule_str)
   if schedule == None:
       print(f"\n\nSchedule conversion failed.\n\n{schedule_str}")
@@ -113,4 +112,4 @@ for task in task_list:
   if valid:
       print(f"\n\nVALID schedule, completion time: {maxTime}\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
   else:
-      print(f"\n\nINVALID schedule\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
+      print(f"\n\nINVALID schedule\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str_comments}")
