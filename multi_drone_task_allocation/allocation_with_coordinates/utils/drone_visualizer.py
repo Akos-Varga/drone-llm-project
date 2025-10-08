@@ -288,6 +288,15 @@ if __name__ == "__main__":
         ]
     }
 
+    schedule3 = {
+    "Drone4": [
+        {"name": "SubTask3", "object": "Tower", "skill": "RecordVideo", "startTime": 0.0, "endTime": 3.0}
+    ],
+    "Drone6": [
+        {"name": "SubTask2", "object": "Base", "skill": "MeasureWind", "startTime": 0.0, "endTime": 3.5}
+    ]
+    }
+
     cwd = os.path.dirname(os.path.abspath(__file__))
 
     viz1 = DroneVisualizer(objects, drones)
@@ -296,7 +305,7 @@ if __name__ == "__main__":
 
     plt.show()
 
-    viz1.set_schedule(schedule2)
-    viz1.animate(dt=0.1, extra_hold=1.5, save_path=os.path.join(cwd, "saved_gifs","part2.gif"))
+    #viz1.set_schedule(schedule)
+    #viz1.animate(dt=0.1, extra_hold=1.5, save_path=os.path.join(cwd, "saved_gifs","part2.gif"))
 
-    plt.show()
+    #plt.show()
