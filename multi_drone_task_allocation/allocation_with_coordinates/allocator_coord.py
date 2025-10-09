@@ -8,7 +8,7 @@ drones = {
 }        
 
 subtasks = [
-    {"name": <SubTaskName>, "skill": <SkillName>, "object": <ObjectName>},
+    {"name": <SubTaskName>, "skill": <SkillName>, "object": <ObjectName>, "service_time": <ServiceTime>},
     ...
 ]
              
@@ -19,7 +19,7 @@ CONSTRAINTS:
 
 OUTPUT FORMAT:
 subtasks_with_drones = [
-    {"name": <SubTaskName>, "skill": <SkillName>, "object": <ObjectName>, "drones": [<DroneName>, ...]},
+    {"name": <SubTaskName>, "skill": <SkillName>, "object": <ObjectName>, "service_time": <ServiceTime>, "drones": [<DroneName>, ...]},
     ...
 ]"""
 },
@@ -35,17 +35,17 @@ drones = {
 }
 
 subtasks = [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1"},
-    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2"},
-    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1"}
-]"""},
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "service_time": 2.3},
+    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "service_time": 1.6},
+    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "service_time": 2.3}
+]"""
+},
 {"role": "assistant", "content": """
 subtasks_with_drones = [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "drones": ["Drone1", "Drone3", "Drone4"]},
-    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "drones": ["Drone1", "Drone2", "Drone4"]},
-    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "drones": ["Drone1", "Drone3", "Drone4"]}
-]
-"""
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]},
+    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "service_time": 1.6, "drones": ["Drone1", "Drone2", "Drone4"]},
+    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]}
+]"""
 },
 
 # Example 2 --------------------------------------------------------------------------------------------
@@ -59,16 +59,16 @@ drones = {
 }
 
 subtasks = [
-    {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower"},
-    {"name": "SubTask2", "skill": "MeasureWind", "object": "House2"},
-    {"name": "SubTask3", "skill": "MeasureWind", "object": "House3"} 
+    {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "service_time": 2},
+    {"name": "SubTask2", "skill": "MeasureWind", "object": "House2", "service_time": 2.2},
+    {"name": "SubTask3", "skill": "MeasureWind", "object": "House3", "service_time": 2.2}
 ]"""
 },
 {"role": "assistant", "content": """
 subtasks_with_drones = [
-    {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "drones": ["Drone2", "Drone4", "Drone5"]},
-    {"name": "SubTask2", "skill": "MeasureWind", "object": "House2", "drones": ["Drone1", "Drone3"]},
-    {"name": "SubTask3", "skill": "MeasureWind", "object": "House3", "drones": ["Drone1", "Drone3"]} 
+    {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "service_time": 2, "drones": ["Drone2", "Drone4", "Drone5"]},
+    {"name": "SubTask2", "skill": "MeasureWind", "object": "House2", "service_time": 2.2, "drones": ["Drone1", "Drone3"]},
+    {"name": "SubTask3", "skill": "MeasureWind", "object": "House3", "service_time": 2.2, "drones": ["Drone1", "Drone3"]}
 ]"""
 },
 
@@ -81,23 +81,22 @@ drones = {
 }
  
 subtasks = [
-    {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower"},
-    {"name": "SubTask2", "skill": "RecordVideo", "object": "House3"},
-    {"name": "SubTask3", "skill": "RecordVideo", "object": "Base"},
-    {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower"},
-    {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3"},
-    {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base"}
+    {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "service_time": 1.3},
+    {"name": "SubTask2", "skill": "RecordVideo", "object": "House3", "service_time": 1.3},
+    {"name": "SubTask3", "skill": "RecordVideo", "object": "Base", "service_time": 1.3},
+    {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "service_time": 3},
+    {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "service_time": 3},
+    {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "service_time": 3}
 ]"""
 },
 {"role": "assistant", "content": """
 subtasks_with_drones = [
-    {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "drones": ["Drone1"]},
-    {"name": "SubTask2", "skill": "RecordVideo", "object": "House3", "drones": ["Drone1"]},
-    {"name": "SubTask3", "skill": "RecordVideo", "object": "Base", "drones": ["Drone1"]},
-    {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "drones": ["Drone2", "Drone3"]},
-    {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "drones": ["Drone2", "Drone3"]},
-    {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "drones": ["Drone2", "Drone3"]}
-]
-"""
+    {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "service_time": 1.3, "drones": ["Drone1"]},
+    {"name": "SubTask2", "skill": "RecordVideo", "object": "House3", "service_time": 1.3, "drones": ["Drone1"]},
+    {"name": "SubTask3", "skill": "RecordVideo", "object": "Base", "service_time": 1.3, "drones": ["Drone1"]},
+    {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "service_time": 3, "drones": ["Drone2", "Drone3"]},
+    {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "service_time": 3, "drones": ["Drone2", "Drone3"]},
+    {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "service_time": 3, "drones": ["Drone2", "Drone3"]}
+]"""
 }
 ]

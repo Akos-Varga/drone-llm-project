@@ -42,7 +42,13 @@ m5 = "gpt-4o-mini"
 m6 = "gpt-5-mini"
 
 # Actions & Objects and & Drones ------------------------------------------------------------
-actions = ["RecordVideo", "CaptureRGBImage", "CaptureThermalImage", "MeasureWind", "InspectStructure"]
+actions = {
+    "RecordVideo": 1.8,
+    "CaptureRGBImage": 2.6,
+    "CaptureThermalImage": 1.2,
+    "MeasureWind": 2.9,
+    "InspectStructure": 0.7
+}
 
 objects = {
     "Base": (18, 63),
@@ -68,7 +74,7 @@ drones = {
 
 # Inference --------------------------------------------------------------
 model = m6
-schedule_validator = ScheduleValidator(objects, drones)
+schedule_validator = ScheduleValidator(actions, objects, drones)
 for task in task_list:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
 
@@ -81,11 +87,8 @@ for task in task_list:
     if decomposed_task == None:
         print(f"\n\ndecomposed_task conversion failed\n\n{decomposed_task_str}")
         continue
-    valid = validate_decomposer(decomposed_task, task["solution"])
-    if valid:
-        print("\n\nVALID decomposition")
-    else:
-        print(f"\n\nINVALID decomposition\n\nTask:{task['task']}\n\nDecomposed task: {decomposed_task}")
+    valid = validate_decomposer(decomposed_task, task["solution"], actions)
+    if not valid:
         continue
 
     # Allocator
@@ -95,7 +98,7 @@ for task in task_list:
     subtasks_with_drones_str = remove_comments(subtasks_with_drones_str)
     subtasks_with_drones = str_to_code(subtasks_with_drones_str)
     if subtasks_with_drones == None:
-        print(f"\n\nsubtasks_with_drones conversion failed\n\n{subtasks_with_drones_str}")
+        print(f"\n\nERROR: subtasks_with_drones conversion failed\n\n{subtasks_with_drones_str}")
         continue
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
     print(f"travel_times = {travel_times}\n\n")
@@ -107,11 +110,9 @@ for task in task_list:
     schedule_str = remove_comments(schedule_str_comments)
     schedule = str_to_code(schedule_str)
     if schedule == None:
-        print(f"\n\nSchedule conversion failed.\n\n{schedule_str}")
+        print(f"\n\nERROR: Schedule conversion failed.\n\n{schedule_str}")
         continue
     valid, maxTime = schedule_validator.validate_schedule(schedule, travel_times, subtasks_with_drones)
     if valid:
-        print(f"\n\nVALID schedule, completion time: {maxTime}")
-    else:
-        print(f"\n\nINVALID schedule")
+        print(f"\n\nCompletion time: {maxTime}")
     print(f"\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str_comments}")

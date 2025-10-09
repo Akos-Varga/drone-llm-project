@@ -49,12 +49,12 @@ if __name__ == "__main__":
     }
 
     subtasks_with_drones = [
-        {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "drones": ["Drone1"]},
-        {"name": "SubTask2", "skill": "RecordVideo", "object": "House3", "drones": ["Drone1"]},
-        {"name": "SubTask3", "skill": "RecordVideo", "object": "Base", "drones": ["Drone1"]},
-        {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "drones": ["Drone2", "Drone3"]},
-        {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "drones": ["Drone2", "Drone3"]},
-        {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "drones": ["Drone2", "Drone3"]}
+    {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "service_time": 1.3, "drones": ["Drone1"]},
+    {"name": "SubTask2", "skill": "RecordVideo", "object": "House3", "service_time": 1.3, "drones": ["Drone1"]},
+    {"name": "SubTask3", "skill": "RecordVideo", "object": "Base", "service_time": 1.3, "drones": ["Drone1"]},
+    {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "service_time": 3, "drones": ["Drone2", "Drone3"]},
+    {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "service_time": 3, "drones": ["Drone2", "Drone3"]},
+    {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "service_time": 3, "drones": ["Drone2", "Drone3"]}
     ]
 
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
