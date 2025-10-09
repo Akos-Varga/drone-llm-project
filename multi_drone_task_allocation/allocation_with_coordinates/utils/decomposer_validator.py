@@ -1,4 +1,4 @@
-def validate_decomposer(decomposed_task, solution, actions):
+def validate_decomposer(decomposed_task, solution, skills):
     # Check number of entries are the same
     if len(solution) != len(decomposed_task):
         print("DECOMPOSER ERROR: Subtask number mismatch")
@@ -12,7 +12,7 @@ def validate_decomposer(decomposed_task, solution, actions):
         return False
     
     for subtask in decomposed_task:
-        if subtask["service_time"] != actions[subtask["skill"]]:
+        if subtask["service_time"] != skills[subtask["skill"]]:
             print(f"DECOMPOSER ERROR: Wrong service time for {subtask["name"]}.")
             return False
     
@@ -41,8 +41,8 @@ if __name__ == "__main__":
     {"name": "SubTask4", "skill": "CaptureThermalImage", "object": "SolarPanel2", "service_time": 1},
     {"name": "SubTask5", "skill": "CaptureThermalImage", "object": "SolarPanel2", "service_time": 1}
     ]
-    actions = {
+    skills = {
         "CaptureRGBImage": 2.4,
         "CaptureThermalImage": 1
     }
-    print(validate_decomposer(subtasks, solution, actions))
+    print(validate_decomposer(subtasks, solution, skills))

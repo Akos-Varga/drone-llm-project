@@ -41,8 +41,8 @@ m4 = "qwen2.5-coder:7b"
 m5 = "gpt-4o-mini"
 m6 = "gpt-5-mini"
 
-# Actions & Objects and & Drones ------------------------------------------------------------
-actions = {
+# Skills & Objects and & Drones ------------------------------------------------------------
+skills = {
     "RecordVideo": 1.8,
     "CaptureRGBImage": 2.6,
     "CaptureThermalImage": 1.2,
@@ -74,12 +74,12 @@ drones = {
 
 # Inference --------------------------------------------------------------
 model = m6
-schedule_validator = ScheduleValidator(actions, objects, drones)
-for task in task_list:
+schedule_validator = ScheduleValidator(skills, objects, drones)
+for task in task_list[0:1]:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
 
     ## Decomposer
-    decomposer_message = build_message(decomposer_prompt, f"task = {task['task']}\n\nactions = {actions}\n\nobjects = {objects}")
+    decomposer_message = build_message(decomposer_prompt, f"task = {task['task']}\n\nskills = {skills}\n\nobjects = {objects}")
     # print(decomposer_message)
     decomposed_task_str = LM(model=model, messages=decomposer_message, printing=False)
     decomposed_task_str = remove_comments(decomposed_task_str)
@@ -87,7 +87,7 @@ for task in task_list:
     if decomposed_task == None:
         print(f"\n\ndecomposed_task conversion failed\n\n{decomposed_task_str}")
         continue
-    valid = validate_decomposer(decomposed_task, task["solution"], actions)
+    valid = validate_decomposer(decomposed_task, task["solution"], skills)
     if not valid:
         continue
 

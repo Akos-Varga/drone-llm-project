@@ -4,8 +4,8 @@ You decompose a natural-language drone task into a list of subtasks. Output only
 INPUT FORMAT:
 task = <short description>
 
-actions = {
-    <ActionName>: <ServiceTime>,
+skills = {
+    <SkillName>: <ServiceTime>,
     ...
 }
 
@@ -25,7 +25,7 @@ subtasks = [
 {"role": "user", "content": """
 task = "Take RGB image of RoofTop1, thermal image of RoofTop2 and RGB image of House1."
 
-actions = {
+skills = {
     'CaptureRGBImage': 2.3,
     'CaptureThermalImage': 1.6,
     'RecordVideo': 2.2,
@@ -53,7 +53,7 @@ subtasks = [
 {"role": "user", "content": """
 task = "Inspect the structure of the Tower and measure the wind speed at House2 and House3."
 
-actions = {
+skills = {
     "RecordVideo": 2.4,
     "InspectStructure": 2,
     "MeasureWind": 2.2
@@ -65,8 +65,8 @@ objects = {
     "Tower": (78, 62),
     "House3": (9, 14),
     "SolarPanel2": (65, 90)
-}
-"""},
+}"""
+},
 {"role": "assistant", "content": """
 subtasks = [
     {"name": "SubTask1", "skill": "InspectStructure", "object": "Tower", "service_time": 2},
@@ -79,7 +79,7 @@ subtasks = [
 {"role":"user", "content": """
 task = "Record video and take RGB image of Tower, House3 and Base."
 
-actions = {
+skills = {
     "CaptureRGBImage": 3,
     "CaptureThermalImage": 2.5,
     "MeasureWind": 2,

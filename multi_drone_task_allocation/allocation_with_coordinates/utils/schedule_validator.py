@@ -1,8 +1,8 @@
 class ScheduleValidator:
-    def __init__(self, actions, objects, drones):
+    def __init__(self, skills, objects, drones):
         self.objects = objects
         self.drones = drones
-        self.actions = actions
+        self.skills = skills
 
     def validate_schedule(self, schedule, travel_times, subtasks_with_drones):
         # Check if drones and objects are valid
@@ -52,7 +52,7 @@ class ScheduleValidator:
                 if startObject != "" and travel_times["drone_object_to_object"][drone][startObject][endObject] != round(task["arrival_time"] - task["departure_time"], 1):
                     print(f"SCHEDULER ERROR: Invalid traveltime for {task["name"]}. Expected: {travel_times["drone_object_to_object"][drone][startObject][endObject]} Got: {round(task["arrival_time"] - task["departure_time"], 1)}")
                     return False, 0
-                if round(task["finish_time"] - task["arrival_time"], 1) != self.actions[task["skill"]]:
+                if round(task["finish_time"] - task["arrival_time"], 1) != self.skills[task["skill"]]:
                     print(f"SCHEDULER ERROR: Invalid service time for {task["name"]}")
                     return False, 0
                 startObject = endObject
@@ -67,7 +67,7 @@ class ScheduleValidator:
 if __name__ == "__main__":
     from travel_time import compute_travel_times
     
-    actions = {
+    skills = {
         "RecordVideo": 0.5,
         "CaptureRGBImage": 3
     }
@@ -124,6 +124,6 @@ if __name__ == "__main__":
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
     # print(travel_times)
 
-    validator = ScheduleValidator(actions, objects, drones)
+    validator = ScheduleValidator(skills, objects, drones)
 
     print(validator.validate_schedule(schedule, travel_times, subtasks_with_drones))
