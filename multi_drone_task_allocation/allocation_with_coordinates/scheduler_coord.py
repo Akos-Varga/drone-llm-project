@@ -11,20 +11,17 @@ subtasks_with_drones = [
 travel_times = {'drone_to_object':  {<DroneName>: {<ArrivalObjectName>: <TravelTime>, ...}, ...}, 'drone_object_to_object': {<DroneName>:{<DepartureObjectName>: {<ArrivalObjectName>: <TravelTime>, ...}, ...}, ...}}
 
 CONSTRAINTS:
-1) Assign each subtask EXACTLY ONCE, and only to a drone listed in its "drones" field so one subtask MUST ONLY appear once in the schedule.
+1) Each subtask name appears exactly once in schedule.
 2) Tasks are instantaneous on arrival: no service time at the object.
 3) Time semantics:
    a) startTime is the departure time from the drone’s current location; startTime >= 0.
    b) endTime is the arrival time at the task’s object.
    c) First task: endTime - startTime == travel_times['drone_to_object'][Drone][Object].
    d) For consecutive tasks from object A to B on the same drone: endTime(next) - startTime(next) == travel_times['drone_object_to_object'][Drone][A][B]
-4) No overlapping intervals on the same drone. Intervals are half-open [startTime, endTime).
+4) No overlapping intervals on the same drone.
 5) Objective: minimize makespan (max over all endTime).
 
 OUTPUT FORMAT:
-# <SubTaskName> (<GoalObject>): <DroneA>[from=<StartCtx>] t=<travel>  |  <DroneB>[from=<StartCtx>] t=<travel>  ||  chosen=<DroneX> t=<travel>
-...
- 
 schedule = {
   <DroneName>: [
     {"name": <SubTaskName>, "object": <ObjectName>, "skill": <SkillName>, "startTime": <startTime>, "endTime": <endTime>},
@@ -45,10 +42,6 @@ subtasks_with_drones = [
 travel_times = {'drone_to_object': {'Drone1': {'RoofTop1': 3.5, 'RoofTop2': 4.1, 'House1': 1.1}, 'Drone3': {'RoofTop1': 4.1, 'House1': 8.0}, 'Drone4': {'RoofTop1': 1.4, 'RoofTop2': 2.3, 'House1': 1.9}, 'Drone2': {'RoofTop2': 3.1}}, 'drone_object_to_object': {'Drone1': {'RoofTop1': {'RoofTop1': 0.0, 'RoofTop2': 3.1, 'House1': 4.5}, 'RoofTop2': {'RoofTop1': 3.1, 'RoofTop2': 0.0, 'House1': 5.0}, 'House1': {'RoofTop1': 4.5, 'RoofTop2': 5.0, 'House1': 0.0}}, 'Drone3': {'RoofTop1': {'RoofTop1': 0.0, 'House1': 5.8}, 'House1': {'RoofTop1': 5.8, 'House1': 0.0}}, 'Drone4': {'RoofTop1': {'RoofTop1': 0.0, 'RoofTop2': 2.3, 'House1': 3.3}, 'RoofTop2': {'RoofTop1': 2.3, 'RoofTop2': 0.0, 'House1': 3.7}, 'House1': {'RoofTop1': 3.3, 'RoofTop2': 3.7, 'House1': 0.0}}, 'Drone2': {'RoofTop2': {'RoofTop2': 0.0}}}}"""
 },
 {"role": "assistant", "content": """
-# SubTask1 (RoofTop1): Drone1[from=start] t=3.5  |  Drone3[from=start] t=4.1  |  Drone4[from=start] t=1.4  ||  chosen=Drone4 t=1.4
-# SubTask2 (RoofTop2): Drone1[from=start] t=4.1  |  Drone2[from=start] t=3.1  |  Drone4[from=RoofTop1] t=1.4+2.3=3.7  ||  chosen=Drone2 t=3.1
-# SubTask3 (House1):   Drone1[from=start] t=1.1  |  Drone3[from=start] t=8.0  |  Drone4[from=RoofTop1] t=1.4+3.3=4.7  ||  chosen=Drone1 t=1.1
-
 schedule = {
     "Drone1": [
         {"name": "SubTask3", "object": "House1", "skill": "CaptureRGBImage", "startTime": 0, "endTime": 1.1}
@@ -73,10 +66,6 @@ subtasks_with_drones = [
 travel_times = {'drone_to_object': {'Drone2': {'Tower': 4.5}, 'Drone4': {'Tower': 5.8}, 'Drone5': {'Tower': 5.2}, 'Drone1': {'House2': 3.8, 'House3': 1.1}, 'Drone3': {'House2': 5.0, 'House3': 2.7}}, 'drone_object_to_object': {'Drone2': {'Tower': {'Tower': 0.0}}, 'Drone4': {'Tower': {'Tower': 0.0}}, 'Drone5': {'Tower': {'Tower': 0.0}}, 'Drone1': {'House2': {'House2': 0.0, 'House3': 3.2}, 'House3': {'House2': 3.2, 'House3': 0.0}}, 'Drone3': {'House2': {'House2': 0.0, 'House3': 2.3}, 'House3': {'House2': 2.3, 'House3': 0.0}}}}"""
 },
 {"role": "assistant","content": """
-# SubTask1 (Tower):  Drone2[from=start] t=4.5  |  Drone4[from=start] t=5.8  |  Drone5[from=start] t=5.2  ||  chosen=Drone2 t=4.5
-# SubTask2 (House2): Drone1[from=start] t=3.8  |  Drone3[from=start] t=5.0  ||  chosen=Drone1 t=3.8
-# SubTask3 (House3): Drone1[from=House2] t=3.8+3.2=7.0  |  Drone3[from=start] t=2.7  ||  chosen=Drone3 t=2.7
-
 schedule = {
     "Drone1": [
         {"name": "SubTask2", "object": "House2", "skill": "MeasureWind", "startTime": 0, "endTime": 3.8}
@@ -104,14 +93,6 @@ subtasks_with_drones = [
 travel_times = {'drone_to_object': {'Drone1': {'Tower': 6.9, 'House3': 5.5, 'Base': 1.3}, 'Drone2': {'Tower': 3.7, 'House3': 0.4, 'Base': 4.4}, 'Drone3': {'Tower': 2.4, 'House3': 2.5, 'Base': 6.0}}, 'drone_object_to_object': {'Drone1': {'Tower': {'Tower': 0.0, 'House3': 5.6, 'Base': 8.1}, 'House3': {'Tower': 5.6, 'House3': 0.0, 'Base': 5.9}, 'Base': {'Tower': 8.1, 'House3': 5.9, 'Base': 0.0}}, 'Drone2': {'Tower': {'Tower': 0.0, 'House3': 3.8, 'Base': 5.4}, 'House3': {'Tower': 3.8, 'House3': 0.0, 'Base': 3.9}, 'Base': {'Tower': 5.4, 'House3': 3.9, 'Base': 0.0}}, 'Drone3': {'Tower': {'Tower': 0.0, 'House3': 4.5, 'Base': 6.5}, 'House3': {'Tower': 4.5, 'House3': 0.0, 'Base': 4.7}, 'Base': {'Tower': 6.5, 'House3': 4.7, 'Base': 0.0}}}}"""
 },
 {"role": "assistant", "content": """
-# SubTask1 (Tower):  Drone1[from=start] t=6.9  ||  chosen=Drone1 t=6.9
-# SubTask2 (House3):  Drone1[from=Tower] t=6.9+5.6=12.5  ||  chosen=Drone1 t=12.5
-# SubTask3 (Base):  Drone1[from=House3] t=12.5+5.9=18.4  ||  chosen=Drone1 t=18.4
-# SubTask4 (Tower):  Drone2[from=start] t=3.7  |  Drone3[from=start] t=2.4  ||  chosen=Drone3 t=2.4
-# SubTask5 (House3):  Drone2[from=start] t=0.4  |  Drone3[from=Tower] t=2.4+4.5=6.9  ||  chosen=Drone2 t=0.4
-# SubTask6 (Base):  Drone2[from=House3] t=0.4+3.9=4.3  |  Drone3[from=Tower] t=2.4+6.5=8.9  ||  chosen=Drone2 t=4.3
-
-
 schedule = {
     "Drone1": [
         {"name": "SubTask1", "object": "Tower", "skill": "RecordVideo", "startTime": 0.0, "endTime": 6.9},

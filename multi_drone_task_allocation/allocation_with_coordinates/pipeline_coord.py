@@ -67,7 +67,7 @@ drones = {
 
 
 # Inference --------------------------------------------------------------
-model = m5
+model = m6
 schedule_validator = ScheduleValidator(objects, drones)
 for task in task_list:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
