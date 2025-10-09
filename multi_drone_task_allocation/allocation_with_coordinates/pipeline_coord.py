@@ -9,6 +9,7 @@ from utils.decomposer_validator import validate_decomposer
 from utils.inference import LM
 
 import ast
+import time
 
 # Message builder --------------------------------------------------------
 def build_message(prompt, content):
@@ -16,10 +17,6 @@ def build_message(prompt, content):
      return [*prompt, {"role": "user", "content": content}]
 
 # Helpers  ---------------------------------------------------
-def remove_comments(commented_text):
-     lines = commented_text.splitlines(keepends = True)
-     return "".join(line for line in lines if not line.lstrip().startswith("#") and line.strip())
-
 def str_to_code(s):
     try:
       s = s.strip()
@@ -71,18 +68,17 @@ drones = {
   "Drone6": {"skills": ["MeasureWind"], "pos": (74, 66), "speed": 16}
 }
 
-
 # Inference --------------------------------------------------------------
 model = m6
 schedule_validator = ScheduleValidator(skills, objects, drones)
-for task in task_list[0:1]:
+for task in task_list:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
+    startTime = time.time()
 
     ## Decomposer
     decomposer_message = build_message(decomposer_prompt, f"task = {task['task']}\n\nskills = {skills}\n\nobjects = {objects}")
     # print(decomposer_message)
-    decomposed_task_str = LM(model=model, messages=decomposer_message, printing=False)
-    decomposed_task_str = remove_comments(decomposed_task_str)
+    decomposed_task_str = LM(model=m5, messages=decomposer_message, printing=False)
     decomposed_task = str_to_code(decomposed_task_str)
     if decomposed_task == None:
         print(f"\n\ndecomposed_task conversion failed\n\n{decomposed_task_str}")
@@ -94,11 +90,10 @@ for task in task_list[0:1]:
     # Allocator
     allocator_message = build_message(allocator_prompt, f"drones = {drones}\n\nsubtasks = {decomposed_task}")
     # print(allocator_message)
-    subtasks_with_drones_str = LM(model=model, messages=allocator_message, printing=False)
-    subtasks_with_drones_str = remove_comments(subtasks_with_drones_str)
+    subtasks_with_drones_str = LM(model=m6, messages=allocator_message, printing=False)
     subtasks_with_drones = str_to_code(subtasks_with_drones_str)
     if subtasks_with_drones == None:
-        print(f"\n\nERROR: subtasks_with_drones conversion failed\n\n{subtasks_with_drones_str}")
+        print(f"\n\nERROR: subtasks_with_drones conversion failed\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}")
         continue
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
     print(f"travel_times = {travel_times}\n\n")
@@ -106,13 +101,14 @@ for task in task_list[0:1]:
     # Scheduler
     scheduler_message = build_message(scheduler_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
     # print(scheduler_message)
-    schedule_str_comments = LM(model=model, messages=scheduler_message, printing=False)
-    schedule_str = remove_comments(schedule_str_comments)
+    schedule_str = LM(model=m6, messages=scheduler_message, printing=False)
     schedule = str_to_code(schedule_str)
     if schedule == None:
-        print(f"\n\nERROR: Schedule conversion failed.\n\n{schedule_str}")
+        print(f"\n\nERROR: Schedule conversion failed.\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str_comments}")
         continue
     valid, maxTime = schedule_validator.validate_schedule(schedule, travel_times, subtasks_with_drones)
     if valid:
         print(f"\n\nCompletion time: {maxTime}")
-    print(f"\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str_comments}")
+    print(f"\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
+    endTime = time.time()
+    print(f"\n\nInference time: {(endTime - startTime):.1f}\n\n")
