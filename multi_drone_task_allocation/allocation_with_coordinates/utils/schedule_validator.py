@@ -37,7 +37,7 @@ class ScheduleValidator:
                     return False, 0
 
         # Check if timing is good
-        maxEnd = 0
+        makespan = 0
         for drone, tasks in schedule.items():
             startObject = ""
             prevEndTime = 0
@@ -57,10 +57,10 @@ class ScheduleValidator:
                     return False, 0
                 startObject = endObject
                 prevEndTime = task["finish_time"]
-            maxEnd = max(maxEnd, prevEndTime)
+            makespan = max(makespan, prevEndTime)
 
         print("VALID SCHEDULE")
-        return True, maxEnd
+        return True, makespan
 
 
 
