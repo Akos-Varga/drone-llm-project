@@ -7,7 +7,10 @@ from utils.travel_time import compute_travel_times
 from utils.schedule_validator import ScheduleValidator
 from utils.decomposer_validator import validate_decomposer
 from utils.inference import LM
+from utils.drone_visualizer import DroneVisualizer
+from utils.randomizer import randomizer
 
+import matplotlib.pyplot as plt
 import ast
 import time
 
@@ -68,9 +71,13 @@ drones = {
   "Drone6": {"skills": ["MeasureWind"], "pos": (74, 66), "speed": 16}
 }
 
+skills, objects, drones = randomizer(skills=skills, objects=objects, drones=drones)
+
 # Inference --------------------------------------------------------------
 model = m6
 schedule_validator = ScheduleValidator(skills, objects, drones)
+viz = DroneVisualizer(objects, drones)
+
 for task in task_list:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
     startTime = time.time()
@@ -104,7 +111,7 @@ for task in task_list:
     schedule_str = LM(model=m6, messages=scheduler_message, printing=False)
     schedule = str_to_code(schedule_str)
     if schedule == None:
-        print(f"\n\nERROR: Schedule conversion failed.\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str_comments}")
+        print(f"\n\nERROR: Schedule conversion failed.\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
         continue
     valid, maxTime = schedule_validator.validate_schedule(schedule, travel_times, subtasks_with_drones)
     if valid:
@@ -112,3 +119,13 @@ for task in task_list:
     print(f"\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
     endTime = time.time()
     print(f"\n\nInference time: {(endTime - startTime):.1f}\n\n")
+
+    # Visualize
+    viz.set_schedule(schedule)
+    viz.animate(dt=0.1, extra_hold=1.5)
+    plt.show()
+
+    # Update drone positions
+    for drone, info in schedule.items():
+        if info:
+            drones[drone]["pos"] = objects[info[-1]["object"]]
