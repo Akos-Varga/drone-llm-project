@@ -1,4 +1,5 @@
 .env
+.venv
 gpu_specs.py
 models/
 voxl2/
