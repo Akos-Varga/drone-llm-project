@@ -9,8 +9,11 @@ from utils.decomposer_validator import validate_decomposer
 from utils.inference import LM
 from utils.drone_visualizer import DroneVisualizer
 from utils.randomizer import randomizer
+from utils.vrp_allocator import solve_vrp
+from utils.compare_schedules import schedules_equal
 
 import matplotlib.pyplot as plt
+from pprint import pprint
 import ast
 import time
 
@@ -71,14 +74,14 @@ drones = {
   "Drone6": {"skills": ["MeasureWind"], "pos": (74, 66), "speed": 16}
 }
 
-skills, objects, drones = randomizer(skills=skills, objects=objects, drones=drones)
+# skills, objects, drones = randomizer(skills=skills, objects=objects, drones=drones)
 
 # Inference --------------------------------------------------------------
 model = m6
 schedule_validator = ScheduleValidator(skills, objects, drones)
 viz = DroneVisualizer(objects, drones)
 
-for task in task_list:
+for task in task_list[:1]:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
     startTime = time.time()
 
@@ -103,7 +106,8 @@ for task in task_list:
         print(f"\n\nERROR: subtasks_with_drones conversion failed\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}")
         continue
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
-    print(f"travel_times = {travel_times}\n\n")
+    # print(f"travel_times = {travel_times}\n\n")
+    pprint(travel_times, sort_dicts=False)
 
     # Scheduler
     scheduler_message = build_message(scheduler_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
@@ -113,12 +117,21 @@ for task in task_list:
     if schedule == None:
         print(f"\n\nERROR: Schedule conversion failed.\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
         continue
-    valid, maxTime = schedule_validator.validate_schedule(schedule, travel_times, subtasks_with_drones)
+    valid, makespan = schedule_validator.validate_schedule(schedule, travel_times, subtasks_with_drones)
     if valid:
-        print(f"\n\nCompletion time: {maxTime}")
+        print(f"\n\nMake span with LM: {makespan}")
     print(f"\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
     endTime = time.time()
     print(f"\n\nInference time: {(endTime - startTime):.1f}\n\n")
+
+    # Calculate with VRP (Vehicle Routing problem)
+    schedule_vrp, makespan_vrp = solve_vrp(subtasks_with_drones, drones, objects)
+    pprint(schedule_vrp, sort_dicts=False)
+    optimal_schedule = schedules_equal(schedule, schedule_vrp)
+    if optimal_schedule:
+        print("\n\nSchedules are identical.")
+    else:
+        print("\n\nSchedules are different.")
 
     # Visualize
     viz.set_schedule(schedule)
@@ -126,6 +139,6 @@ for task in task_list:
     plt.show()
 
     # Update drone positions
-    for drone, info in schedule.items():
-        if info:
-            drones[drone]["pos"] = objects[info[-1]["object"]]
+    # for drone, info in schedule.items():
+    #     if info:
+    #         drones[drone]["pos"] = objects[info[-1]["object"]]
