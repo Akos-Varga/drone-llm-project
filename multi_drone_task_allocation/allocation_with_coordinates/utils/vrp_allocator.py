@@ -1,214 +1,202 @@
-from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+from typing import Dict, List, Tuple
+from math import sqrt
+from ortools.sat.python import cp_model
 
-def solve_vrp(subtasks_with_drones, travel_times, time_limit_s=5):
-    """
-    Solve multi-drone scheduling with sequence-dependent travel times,
-    per-task service times, drone eligibility, and makespan minimization.
+# -------------------------
+# Input data (from the user)
+# -------------------------
+subtasks_with_drones = [
+    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]},
+    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "service_time": 1.6, "drones": ["Drone1", "Drone2", "Drone4"]},
+    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]},
+]
 
-    Inputs
-    ------
-    subtasks_with_drones: [
-        {"name": str, "skill": str, "object": str, "service_time": float, "drones": [str, ...]}, ...
-    ]
-    travel_times: {
-      "drone_to_object": {Drone: {Object: float}},
-      "drone_object_to_object": {Drone: {FromObj: {ToObj: float}}}
-    }
+objects = {
+    "Base": (18, 63),
+    "RoofTop1": (72, 9),
+    "RoofTop2": (41, 56),
+    "SolarPanel1": (85, 22),
+    "SolarPanel2": (87, 20),
+    "House1": (5, 44),
+    "House2": (92, 71),
+    "House3": (47, 36),
+    "Tower": (14, 7),
+}
 
-    Output
-    ------
-    schedule: {
-      DroneName: [
-        {"name": str, "object": str, "skill": str,
-         "departure_time": float, "arrival_time": float, "finish_time": float}, ...
-      ],
-      ...
-    }
-    """
+drones = {
+    "Drone1": {"skills": ["CaptureThermalImage"], "pos": (27, 81), "speed": 15},
+    "Drone2": {"skills": ["MeasureWind", "CaptureRGBImage"], "pos": (63, 14), "speed": 18},
+    "Drone3": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (92, 47), "speed": 12},
+    "Drone4": {"skills": ["CaptureRGBImage", "RecordVideo"], "pos": (39, 59), "speed": 19},
+    "Drone5": {"skills": ["CaptureThermalImage", "InspectStructure"], "pos": (8, 23), "speed": 11},
+    "Drone6": {"skills": ["MeasureWind"], "pos": (74, 66), "speed": 16},
+}
 
-    # ---------- 1) Normalize basic data ----------
-    tasks = [
-        (t["name"], t["object"], t["skill"], float(t.get("service_time", 0.0)), list(t["drones"]))
-        for t in subtasks_with_drones
-    ]
-    task_count = len(tasks)
-    # All drones that appear in eligibility sets
-    drones = sorted(set(d for *_, ds in tasks for d in ds))
-    num_vehicles = len(drones)
+# -------------------------
+# Helper functions
+# -------------------------
 
-    # Create one dedicated depot (start=end) node per vehicle
-    # Global node indices: 0..task_count-1 = tasks, task_count..task_count+num_vehicles-1 = depots
-    starts = [task_count + v for v in range(num_vehicles)]
-    ends   = [task_count + v for v in range(num_vehicles)]
+def euclid(a: Tuple[float, float], b: Tuple[float, float]) -> float:
+    return sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
-    # Quick helpers to access data
-    def svc_time(node):
-        return tasks[node][3] if 0 <= node < task_count else 0.0
 
-    def travel_from_to(drone, from_node, to_node):
-        """Pure travel time (no service). Depots have index >= task_count."""
-        depot = task_count + drones.index(drone)
-        # depot -> task
-        if from_node == depot and to_node < task_count:
-            obj = tasks[to_node][1]
-            return float(travel_times["drone_to_object"][drone][obj])
-        # task -> depot (we won't force a return travel; set 0 here)
-        if from_node < task_count and to_node == depot:
-            return 0.0
-        # task -> task
-        if from_node < task_count and to_node < task_count:
-            from_obj = tasks[from_node][1]
-            to_obj   = tasks[to_node][1]
-            return float(travel_times["drone_object_to_object"][drone][from_obj][to_obj])
-        # depot -> depot
-        return 0.0
+def travel_time_from_to(drone_speed: float, a_xy: Tuple[float, float], b_xy: Tuple[float, float]) -> float:
+    return euclid(a_xy, b_xy) / drone_speed
 
-    # We model time as: transit(from→to) = service_time(at from) + travel_time(from→to)
-    # This counts each task's service exactly once (when leaving the task).
-    # For the first leg (depot->task), depot service is 0, as desired.
-    def leg_time(drone, from_node, to_node):
-        base = travel_from_to(drone, from_node, to_node)
-        if 0 <= from_node < task_count:
-            base += svc_time(from_node)
-        return base
 
-    # ---------- 2) OR-Tools Manager & Routing ----------
-    manager = pywrapcp.RoutingIndexManager(task_count + num_vehicles, num_vehicles, starts, ends)
-    routing = pywrapcp.RoutingModel(manager)
+# -------------------------
+# CP-SAT model (assignment + ordering per drone with travel times)
+# NOTE: CP-SAT does not support continuous decision variables. We time-scale
+# everything to integers (tenths of a time unit) using TIME_SCALE=10.
+# -------------------------
 
-    # Vehicle-dependent transit callbacks (heterogeneous travel per drone)
-    transit_cids = []
-    for v, drone in enumerate(drones):
-        def make_cb(drone_name):
-            def cb(from_index, to_index):
-                from_node = manager.IndexToNode(from_index)
-                to_node   = manager.IndexToNode(to_index)
-                # OR-Tools expects integers; scale by 1000 to keep ms resolution
-                return int(round(1000.0 * leg_time(drone_name, from_node, to_node)))
-            return cb
-        cid = routing.RegisterTransitCallback(make_cb(drone))
-        # Set arc cost for this vehicle to its own callback
-        routing.SetArcCostEvaluatorOfVehicle(cid, v)
-        transit_cids.append(cid)
+def solve_vrp(subtasks: List[Dict], drones_data: Dict[str, Dict], objects_xy: Dict[str, Tuple[int, int]]):
+    model = cp_model.CpModel()
 
-    # ---------- 3) Enforce drone eligibility per task ----------
-    for task_i, (*_, allowed) in enumerate(tasks):
-        # Node index in routing
-        node_index = manager.NodeToIndex(task_i)
-        # Remove disallowed vehicles for this node
-        for v, drone in enumerate(drones):
-            if drone not in allowed:
-                routing.VehicleVar(node_index).RemoveValue(v)
+    TIME_SCALE = 10  # one decimal resolution -> multiply all times by 10
 
-    # ---------- 4) Time dimension & makespan objective ----------
-    routing.AddDimensionWithVehicleTransits(
-        transit_cids,   # per-vehicle transit evaluators
-        0,              # no waiting/slack
-        10**12,         # large horizon
-        True,           # force cumul at start to 0
-        "Time"
-    )
-    time_dim = routing.GetDimensionOrDie("Time")
+    tasks = [t["name"] for t in subtasks]
+    drone_list = list(drones_data.keys())
 
-    # Minimize maximum route end (makespan). GlobalSpan is end_of_route - start (start=0 here).
-    time_dim.SetGlobalSpanCostCoefficient(1)
+    # Eligible drones per task (provided by user input)
+    eligible = {t["name"]: list(t["drones"]) for t in subtasks}
 
-    # Optional: disallow empty routes for vehicles not eligible to any task (kept flexible)
-    # (Default is fine: vehicles can be unused.)
+    # Convenience maps
+    service = {t["name"]: int(round(float(t["service_time"]) * TIME_SCALE)) for t in subtasks}
+    obj_of = {t["name"]: t["object"] for t in subtasks}
+    skill_of = {t["name"]: t["skill"] for t in subtasks}
 
-    # ---------- 5) First solution & local search ----------
-    search = pywrapcp.DefaultRoutingSearchParameters()
-    search.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-    search.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
-    search.time_limit.FromSeconds(int(time_limit_s))
+    # Precompute travel times (scaled to int):
+    start_travel = {}  # (d, t) -> int time
+    travel = {}        # (d, i, j) -> int time (i != j)
 
-    solution = routing.SolveWithParameters(search)
-    if solution is None:
+    # Track a loose horizon upper bound
+    horizon_bound = 0
+
+    for d in drone_list:
+        dpos = drones_data[d]["pos"]
+        spd = float(drones_data[d]["speed"])
+        for t in tasks:
+            if d in eligible[t]:
+                tpos = objects_xy[obj_of[t]]
+                arr = travel_time_from_to(spd, dpos, tpos)
+                val = int(round(arr * TIME_SCALE))
+                start_travel[(d, t)] = val
+                horizon_bound = max(horizon_bound, val)
+        for i in tasks:
+            for j in tasks:
+                if i == j:
+                    continue
+                if (d in eligible[i]) and (d in eligible[j]):
+                    ipos = objects_xy[obj_of[i]]
+                    jpos = objects_xy[obj_of[j]]
+                    tij = travel_time_from_to(spd, ipos, jpos)
+                    val = int(round(tij * TIME_SCALE))
+                    travel[(d, i, j)] = val
+                    horizon_bound = max(horizon_bound, val)
+
+    # A very safe horizon: sum of all start_travel + all services + all pairwise traveltimes
+    HORIZON = max(100000, 5 * horizon_bound + sum(service.values()) + 100)
+
+    # Decision variables
+    x = {}
+    for t in tasks:
+        for d in eligible[t]:
+            x[(d, t)] = model.NewBoolVar(f"x_{d}_{t}")
+
+    start = {t: model.NewIntVar(0, HORIZON, f"start_{t}") for t in tasks}
+    finish = {t: model.NewIntVar(0, HORIZON, f"finish_{t}") for t in tasks}
+
+    # Each task is assigned to exactly one eligible drone
+    for t in tasks:
+        model.Add(sum(x[(d, t)] for d in eligible[t]) == 1)
+
+    # Finish = start + service
+    for t in tasks:
+        model.Add(finish[t] == start[t] + service[t])
+
+    # First-task arrival constraints
+    for d in drone_list:
+        Td = [t for t in tasks if d in eligible[t]]
+        for i in Td:
+            if (d, i) in start_travel:
+                model.Add(start[i] >= start_travel[(d, i)]).OnlyEnforceIf(x[(d, i)])
+
+    # Pairwise precedences with sequence-dependent travel
+    bigM = HORIZON
+    for d in drone_list:
+        Td = [t for t in tasks if d in eligible[t]]
+        for i in Td:
+            for j in Td:
+                if i == j:
+                    continue
+                both = model.NewBoolVar(f"both_{d}_{i}_{j}")
+                model.Add(both <= x[(d, i)])
+                model.Add(both <= x[(d, j)])
+                model.Add(both >= x[(d, i)] + x[(d, j)] - 1)
+
+                y = model.NewBoolVar(f"y_{d}_{i}_before_{j}")
+                tij = travel.get((d, i, j), 0)
+                tji = travel.get((d, j, i), 0)
+                # When both==1, either i before j or j before i
+                model.Add(start[j] >= finish[i] + tij - bigM * (1 - y)).OnlyEnforceIf(both)
+                model.Add(start[i] >= finish[j] + tji - bigM * y).OnlyEnforceIf(both)
+
+    # Makespan
+    makespan = model.NewIntVar(0, HORIZON, "makespan")
+    for t in tasks:
+        model.Add(makespan >= finish[t])
+    model.Minimize(makespan)
+
+    solver = cp_model.CpSolver()
+    solver.parameters.max_time_in_seconds = 20.0
+    solver.parameters.num_search_workers = 8
+
+    status = solver.Solve(model)
+    if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
         raise RuntimeError("No feasible schedule found.")
 
-    # ---------- 6) Extract schedule ----------
-    schedule = {}
-    time_scale = 1000.0  # we scaled to milliseconds
-    makespan = 0 # max over all finish_time values
+    # Recover assignments per drone and order tasks by start time
+    schedule: Dict[str, List[Dict]] = {d: [] for d in drone_list}
 
-    for v, drone in enumerate(drones):
-        idx = routing.Start(v)
-        if routing.IsEnd(idx):
-            continue  # vehicle unused
-        seq = []
-        prev_finish = 0.0  # departure time from depot is 0 by construction
+    chosen_drone: Dict[str, str] = {}
+    for t in tasks:
+        for d in eligible[t]:
+            if solver.Value(x[(d, t)]) == 1:
+                chosen_drone[t] = d
+                break
 
-        while not routing.IsEnd(idx):
-            node = manager.IndexToNode(idx)
-            next_idx = solution.Value(routing.NextVar(idx))
+    for t in tasks:
+        d = chosen_drone[t]
+        arr = solver.Value(start[t]) / TIME_SCALE
+        fin = solver.Value(finish[t]) / TIME_SCALE
+        schedule[d].append({
+            "name": t,
+            "object": obj_of[t],
+            "skill": skill_of[t],
+            "departure_time": None,  # fill below
+            "arrival_time": round(arr, 1),
+            "finish_time": round(fin, 1),
+        })
 
-            if 0 <= node < task_count:
-                name, obj, skill, stime, _ = tasks[node]
+    # Post-process to compute departure times
+    for d, lst in schedule.items():
+        if not lst:
+            continue
+        lst.sort(key=lambda r: r["arrival_time"])  # sort by arrival
+        lst[0]["departure_time"] = 0.0
+        for k in range(1, len(lst)):
+            prev = lst[k - 1]
+            lst[k]["departure_time"] = prev["finish_time"]
 
-                # Arrival at this node equals the cumul at this node:
-                arrival_here = solution.Value(time_dim.CumulVar(idx)) / time_scale
-                finish_here  = arrival_here + stime
+    solved_makespan = max((r["finish_time"] for lst in schedule.values() for r in lst), default=0.0)
 
-                # Departure from this node equals its finish time
-                # (since leg_time adds service time at 'node' to the arc leaving it).
-                # For the first task, prev_finish should match 0 for depot.
-                # We overwrite departure_time with prev_finish to make it explicit.
-                seq.append({
-                    "name": name,
-                    "object": obj,
-                    "skill": skill,
-                    "departure_time": float(prev_finish),
-                    "arrival_time": float(arrival_here),
-                    "finish_time": float(finish_here),
-                })
-                prev_finish = finish_here  # next leg departs after service here
-                makespan = max(makespan, finish_here)
-
-            idx = next_idx
-
-        if seq:
-            schedule[drone] = seq
-
-    return schedule, makespan
+    return schedule, solved_makespan
 
 
-# -------------------------- Example usage --------------------------
 if __name__ == "__main__":
-    # Paste your example directly:
-    subtasks_with_drones = [
-        {"name": "SubTask1", "skill": "RecordVideo",      "object": "Tower",   "service_time": 0.5, "drones": ["Drone1"]},
-        {"name": "SubTask2", "skill": "RecordVideo",      "object": "House3",  "service_time": 0.5, "drones": ["Drone1"]},
-        {"name": "SubTask3", "skill": "RecordVideo",      "object": "Base",    "service_time": 0.5, "drones": ["Drone1"]},
-        {"name": "SubTask4", "skill": "CaptureRGBImage",  "object": "Tower",   "service_time": 3.0, "drones": ["Drone2", "Drone3"]},
-        {"name": "SubTask5", "skill": "CaptureRGBImage",  "object": "House3",  "service_time": 3.0, "drones": ["Drone2", "Drone3"]},
-        {"name": "SubTask6", "skill": "CaptureRGBImage",  "object": "Base",    "service_time": 3.0, "drones": ["Drone2", "Drone3"]},
-    ]
-
-    travel_times = {
-        "drone_to_object": {
-            "Drone1": {"Tower": 6.9, "House3": 5.5, "Base": 1.3},
-            "Drone2": {"Tower": 3.7, "House3": 0.4, "Base": 4.4},
-            "Drone3": {"Tower": 2.4, "House3": 2.5, "Base": 6.0},
-        },
-        "drone_object_to_object": {
-            "Drone1": {
-                "Tower":   {"Tower": 0.0, "House3": 5.6, "Base": 8.1},
-                "House3":  {"Tower": 5.6, "House3": 0.0, "Base": 5.9},
-                "Base":    {"Tower": 8.1, "House3": 5.9, "Base": 0.0},
-            },
-            "Drone2": {
-                "Tower":   {"Tower": 0.0, "House3": 3.8, "Base": 5.4},
-                "House3":  {"Tower": 3.8, "House3": 0.0, "Base": 3.9},
-                "Base":    {"Tower": 5.4, "House3": 3.9, "Base": 0.0},
-            },
-            "Drone3": {
-                "Tower":   {"Tower": 0.0, "House3": 4.5, "Base": 6.5},
-                "House3":  {"Tower": 4.5, "House3": 0.0, "Base": 4.7},
-                "Base":    {"Tower": 6.5, "House3": 4.7, "Base": 0.0},
-            },
-        },
-    }
-
-    schedule = solve_vrp(subtasks_with_drones, travel_times, time_limit_s=3)
-    from pprint import pprint
-    pprint(schedule, sort_dicts=False)
+    schedule, ms = solve_vrp(subtasks_with_drones, drones, objects)
+    print("Solved multi-task schedule (min. makespan):")
+    for d, lst in schedule.items():
+        print(f"  {d}: {lst}")
+    print(f"Makespan = {ms}")
