@@ -33,8 +33,8 @@ def schedules_equal(
         list2 = [normalize(t) for t in active2[drone]]
 
         if ignore_order:
-            list1.sort(key=lambda t: (t.get("name", ""), t.get("object", "")))
-            list2.sort(key=lambda t: (t.get("name", ""), t.get("object", "")))
+            list1.sort(key=lambda t: t.get("name", ""))
+            list2.sort(key=lambda t: t.get("name", ""))
 
         if len(list1) != len(list2):
             return False
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     schedule_b = {
         "Drone1": [
             {"name": "SubTask1", "object": "RoofTop1", "skill": "CaptureRGBImage",
-             "departure_time": 0.0, "arrival_time": 1.5, "finish_time": 3.7001}
+             "departure_time": 0.0, "arrival_time": 1.4, "finish_time": 3.7001}
         ],
         "Drone2": [],  # ignored since idle
     }
