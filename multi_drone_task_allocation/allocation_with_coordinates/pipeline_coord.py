@@ -80,7 +80,7 @@ skills, objects, drones = randomizer(skills=skills, objects=objects, drones=dron
 model = m6
 #schedule_validator = ScheduleValidator(skills, objects, drones)
 
-for task in task_list:
+for task in task_list[:2]:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
     startTime = time.time()
 
@@ -88,9 +88,10 @@ for task in task_list:
     decomposer_message = build_message(decomposer_prompt, f"task = {task['task']}\n\nskills = {skills}\n\nobjects = {objects}")
     # print(decomposer_message)
     decomposed_task_str = LM(model=m5, messages=decomposer_message, printing=False)
+    print(f"\n\nDecomposed task: {decomposed_task_str}")
     decomposed_task = str_to_code(decomposed_task_str)
     if decomposed_task == None:
-        print(f"\n\nERROR: decomposed_task conversion failed\n\n{decomposed_task_str}")
+        print(f"\n\nERROR: decomposed_task conversion failed\n\n")
         continue
     valid = validate_decomposer(decomposed_task, task["solution"], skills)
     if not valid:
@@ -100,9 +101,10 @@ for task in task_list:
     allocator_message = build_message(allocator_prompt, f"drones = {drones}\n\nsubtasks = {decomposed_task}")
     # print(allocator_message)
     subtasks_with_drones_str = LM(model=m6, messages=allocator_message, printing=False)
+    print(f"\n\nAllocated task: {subtasks_with_drones_str}")
     subtasks_with_drones = str_to_code(subtasks_with_drones_str)
     if subtasks_with_drones == None:
-        print(f"\n\nERROR: subtasks_with_drones conversion failed\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}")
+        print(f"\n\nERROR: subtasks_with_drones conversion failed")
         continue
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
     # pprint(travel_times, sort_dicts=False)
@@ -111,28 +113,26 @@ for task in task_list:
     scheduler_message = build_message(scheduler_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
     # print(scheduler_message)
     schedule_str = LM(model=m6, messages=scheduler_message, printing=False)
+    print(f"\n\nScheduled task: {schedule_str}")
     schedule = str_to_code(schedule_str)
     if schedule == None:
-        print(f"\n\nERROR: Schedule conversion failed.\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
         continue
     valid, makespan = validate_schedule(skills, objects, drones, subtasks_with_drones, travel_times, schedule)
     if not valid:
-        print(f"\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
         continue
-    print(f"\n\nMake span with LM: {makespan}")
-    print(f"\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
     endTime = time.time()
-    print(f"\n\nInference time: {(endTime - startTime):.1f}\n\n")
 
     # Calculate with VRP (Vehicle Routing problem)
     schedule_vrp, makespan_vrp = solve_vrp(subtasks_with_drones, drones, objects)
-    print("Schedule by VRP:")
+    print("\n\nSchedule by VRP:")
     pprint(schedule_vrp, sort_dicts=False)
     optimal_schedule = schedules_equal(schedule, schedule_vrp)
     if optimal_schedule:
         print("\n\nSchedules are identical.")
     else:
         print("\n\nSchedules are different.")
+    print(f"\n\nMakespan:\n\tLLM: {makespan}\n\tVRP: {makespan_vrp}")
+    print(f"Inference time: {(endTime - startTime):.1f}")
 
     # Visualize
     anim = animate_schedule(objects, drones, schedule, dt=0.1, extra_hold=1.5)
