@@ -4,7 +4,7 @@ from scheduler_coord import messages as scheduler_prompt
 
 from utils.test_tasks import task_list
 from utils.travel_time import compute_travel_times
-from utils.schedule_validator import ScheduleValidator
+from utils.schedule_validator import validate_schedule
 from utils.decomposer_validator import validate_decomposer
 from utils.inference import LM
 from utils.drone_visualizer import animate_schedule
@@ -78,9 +78,9 @@ skills, objects, drones = randomizer(skills=skills, objects=objects, drones=dron
 
 # Inference --------------------------------------------------------------
 model = m6
-schedule_validator = ScheduleValidator(skills, objects, drones)
+#schedule_validator = ScheduleValidator(skills, objects, drones)
 
-for task in task_list[6:8]:
+for task in task_list:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
     startTime = time.time()
 
@@ -105,7 +105,6 @@ for task in task_list[6:8]:
         print(f"\n\nERROR: subtasks_with_drones conversion failed\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}")
         continue
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
-    # print(f"travel_times = {travel_times}\n\n")
     # pprint(travel_times, sort_dicts=False)
 
     # Scheduler
@@ -116,9 +115,11 @@ for task in task_list[6:8]:
     if schedule == None:
         print(f"\n\nERROR: Schedule conversion failed.\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
         continue
-    valid, makespan = schedule_validator.validate_schedule(schedule, travel_times, subtasks_with_drones)
-    if valid:
-        print(f"\n\nMake span with LM: {makespan}")
+    valid, makespan = validate_schedule(skills, objects, drones, subtasks_with_drones, travel_times, schedule)
+    if not valid:
+        print(f"\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
+        continue
+    print(f"\n\nMake span with LM: {makespan}")
     print(f"\n\nDecomposed task: {decomposed_task_str}\n\nAllocated task: {subtasks_with_drones_str}\n\nScheduled task: {schedule_str}")
     endTime = time.time()
     print(f"\n\nInference time: {(endTime - startTime):.1f}\n\n")
