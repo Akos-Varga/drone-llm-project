@@ -6,9 +6,9 @@ from ortools.sat.python import cp_model
 # Input data (from the user)
 # -------------------------
 subtasks_with_drones = [
-    {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]},
-    {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "service_time": 1.6, "drones": ["Drone1", "Drone2", "Drone4"]},
-    {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]},
+    {"name": "SubTask1", "skill": "InspectStructure", "object": "House2", "service_time": 0.7, "drones": ["Drone5"]},
+    {"name": "SubTask2", "skill": "MeasureWind", "object": "Base", "service_time": 2.9, "drones": ["Drone2", "Drone6"]},
+    {"name": "SubTask3", "skill": "RecordVideo", "object": "Tower", "service_time": 1.8, "drones": ["Drone4"]},
 ]
 
 objects = {
@@ -50,7 +50,7 @@ def travel_time_from_to(drone_speed: float, a_xy: Tuple[float, float], b_xy: Tup
 # everything to integers (tenths of a time unit) using TIME_SCALE=10.
 # -------------------------
 
-def solve_vrp(subtasks: List[Dict], drones_data: Dict[str, Dict], objects_xy: Dict[str, Tuple[int, int]]):
+def solve_vrp(subtasks: List[Dict], drones_data: Dict[str, Dict], objects: Dict[str, Tuple[int, int]]):
     model = cp_model.CpModel()
 
     TIME_SCALE = 10  # one decimal resolution -> multiply all times by 10
@@ -78,7 +78,7 @@ def solve_vrp(subtasks: List[Dict], drones_data: Dict[str, Dict], objects_xy: Di
         spd = float(drones_data[d]["speed"])
         for t in tasks:
             if d in eligible[t]:
-                tpos = objects_xy[obj_of[t]]
+                tpos = objects[obj_of[t]]
                 arr = travel_time_from_to(spd, dpos, tpos)
                 val = int(round(arr * TIME_SCALE))
                 start_travel[(d, t)] = val
@@ -88,8 +88,8 @@ def solve_vrp(subtasks: List[Dict], drones_data: Dict[str, Dict], objects_xy: Di
                 if i == j:
                     continue
                 if (d in eligible[i]) and (d in eligible[j]):
-                    ipos = objects_xy[obj_of[i]]
-                    jpos = objects_xy[obj_of[j]]
+                    ipos = objects[obj_of[i]]
+                    jpos = objects[obj_of[j]]
                     tij = travel_time_from_to(spd, ipos, jpos)
                     val = int(round(tij * TIME_SCALE))
                     travel[(d, i, j)] = val
@@ -146,7 +146,7 @@ def solve_vrp(subtasks: List[Dict], drones_data: Dict[str, Dict], objects_xy: Di
     makespan = model.NewIntVar(0, HORIZON, "makespan")
     for t in tasks:
         model.Add(makespan >= finish[t])
-    model.Minimize(makespan)
+    model.Minimize(1000000 * makespan + sum(start[t] for t in tasks))
 
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = 20.0
