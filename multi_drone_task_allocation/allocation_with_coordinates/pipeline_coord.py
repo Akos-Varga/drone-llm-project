@@ -7,7 +7,7 @@ from utils.travel_time import compute_travel_times
 from utils.schedule_validator import ScheduleValidator
 from utils.decomposer_validator import validate_decomposer
 from utils.inference import LM
-from utils.drone_visualizer import DroneVisualizer
+from utils.drone_visualizer import animate_schedule
 from utils.randomizer import randomizer
 from utils.vrp_allocator import solve_vrp
 from utils.compare_schedules import schedules_equal
@@ -74,12 +74,11 @@ drones = {
   "Drone6": {"skills": ["MeasureWind"], "pos": (74, 66), "speed": 16}
 }
 
-# skills, objects, drones = randomizer(skills=skills, objects=objects, drones=drones)
+skills, objects, drones = randomizer(skills=skills, objects=objects, drones=drones)
 
 # Inference --------------------------------------------------------------
 model = m6
 schedule_validator = ScheduleValidator(skills, objects, drones)
-viz = DroneVisualizer(objects, drones)
 
 for task in task_list[6:8]:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
@@ -135,8 +134,7 @@ for task in task_list[6:8]:
         print("\n\nSchedules are different.")
 
     # Visualize
-    viz.set_schedule(schedule)
-    viz.animate(dt=0.1, extra_hold=1.5)
+    anim = animate_schedule(objects, drones, schedule, dt=0.1, extra_hold=1.5)
     plt.show()
 
     # Update drone positions
