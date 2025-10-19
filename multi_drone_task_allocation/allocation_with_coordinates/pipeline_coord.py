@@ -81,7 +81,7 @@ model = m6
 schedule_validator = ScheduleValidator(skills, objects, drones)
 viz = DroneVisualizer(objects, drones)
 
-for task in task_list[:1]:
+for task in task_list[6:8]:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
     startTime = time.time()
 
@@ -91,7 +91,7 @@ for task in task_list[:1]:
     decomposed_task_str = LM(model=m5, messages=decomposer_message, printing=False)
     decomposed_task = str_to_code(decomposed_task_str)
     if decomposed_task == None:
-        print(f"\n\ndecomposed_task conversion failed\n\n{decomposed_task_str}")
+        print(f"\n\nERROR: decomposed_task conversion failed\n\n{decomposed_task_str}")
         continue
     valid = validate_decomposer(decomposed_task, task["solution"], skills)
     if not valid:
@@ -107,7 +107,7 @@ for task in task_list[:1]:
         continue
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
     # print(f"travel_times = {travel_times}\n\n")
-    pprint(travel_times, sort_dicts=False)
+    # pprint(travel_times, sort_dicts=False)
 
     # Scheduler
     scheduler_message = build_message(scheduler_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
@@ -126,6 +126,7 @@ for task in task_list[:1]:
 
     # Calculate with VRP (Vehicle Routing problem)
     schedule_vrp, makespan_vrp = solve_vrp(subtasks_with_drones, drones, objects)
+    print("Schedule by VRP:")
     pprint(schedule_vrp, sort_dicts=False)
     optimal_schedule = schedules_equal(schedule, schedule_vrp)
     if optimal_schedule:
