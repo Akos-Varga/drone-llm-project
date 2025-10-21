@@ -2,7 +2,7 @@ from decomposer_coord import messages as decomposer_prompt
 from allocator_coord import messages as allocator_prompt
 from scheduler_coord import messages as scheduler_prompt
 
-from utils.test_tasks import task_list
+from test_tasks import task_list2
 from utils.travel_time import compute_travel_times
 from utils.schedule_validator import validate_schedule
 from utils.decomposer_validator import validate_decomposer
@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from pprint import pprint
 import ast
 import time
+import os
 
 # Message builder --------------------------------------------------------
 def build_message(prompt, content):
@@ -37,12 +38,14 @@ def str_to_code(s):
         return None
 
 # Models -----------------------------------------------------------------
-m1 = "qwen2.5-coder:1.5b"
-m2 = "qwen2.5-coder:3b"
-m3 = "codegemma:7b"
-m4 = "qwen2.5-coder:7b"
-m5 = "gpt-4o-mini"
-m6 = "gpt-5-mini"
+m1 = "codegemma:7b"
+m2 = "qwen2.5-coder:7b"
+m3 = "gpt-4o-mini"
+m4 = "gpt-4o"
+m5 = "gpt-4.1-mini"
+m6 = "gpt-4.1"
+m7 = "gpt-5-mini"
+m8 = "gpt-5"
 
 # Skills & Objects and & Drones ------------------------------------------------------------
 skills = {
@@ -77,17 +80,20 @@ drones = {
 skills, objects, drones = randomizer(skills=skills, objects=objects, drones=drones)
 
 # Inference --------------------------------------------------------------
-model = m6
+model = m8
 #schedule_validator = ScheduleValidator(skills, objects, drones)
 
-for task in task_list[:2]:
+out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saved_gifs")
+os.makedirs(out_dir, exist_ok=True)
+
+for task in task_list2[15:]:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
     startTime = time.time()
 
     ## Decomposer
     decomposer_message = build_message(decomposer_prompt, f"task = {task['task']}\n\nskills = {skills}\n\nobjects = {objects}")
     # print(decomposer_message)
-    decomposed_task_str = LM(model=m5, messages=decomposer_message, printing=False)
+    decomposed_task_str = LM(model=model, messages=decomposer_message, printing=False)
     print(f"\n\nDecomposed task: {decomposed_task_str}")
     decomposed_task = str_to_code(decomposed_task_str)
     if decomposed_task == None:
@@ -100,7 +106,7 @@ for task in task_list[:2]:
     # Allocator
     allocator_message = build_message(allocator_prompt, f"drones = {drones}\n\nsubtasks = {decomposed_task}")
     # print(allocator_message)
-    subtasks_with_drones_str = LM(model=m6, messages=allocator_message, printing=False)
+    subtasks_with_drones_str = LM(model=model, messages=allocator_message, printing=False)
     print(f"\n\nAllocated task: {subtasks_with_drones_str}")
     subtasks_with_drones = str_to_code(subtasks_with_drones_str)
     if subtasks_with_drones == None:
@@ -112,7 +118,7 @@ for task in task_list[:2]:
     # Scheduler
     scheduler_message = build_message(scheduler_prompt, f"subtasks_with_drones = {subtasks_with_drones_str}\n\ntravel_times = {travel_times}")
     # print(scheduler_message)
-    schedule_str = LM(model=m6, messages=scheduler_message, printing=False)
+    schedule_str = LM(model=model, messages=scheduler_message, printing=False)
     print(f"\n\nScheduled task: {schedule_str}")
     schedule = str_to_code(schedule_str)
     if schedule == None:
@@ -135,7 +141,7 @@ for task in task_list[:2]:
     print(f"Inference time: {(endTime - startTime):.1f}")
 
     # Visualize
-    anim = animate_schedule(objects, drones, schedule, dt=0.1, extra_hold=1.5)
+    anim = animate_schedule(objects, drones, schedule, dt=0.1, extra_hold=1.5, save_path=os.path.join(out_dir, f"{task['id']}.gif"))
     plt.show()
 
     # Update drone positions
