@@ -7,6 +7,6 @@ GSCE/
 LiP-LLM/
 __pycache__/
 gpu_specs.py
-multi_drone_task_allocation/allocation_with_coordinates/utils/saved_gifs/
+multi_drone_task_allocation/allocation_with_coordinates/saved_gifs/
 multi_drone_task_allocation/allocation_with_coordinates/old/
 multi_drone_task_allocation/allocation_with_dependencies/
