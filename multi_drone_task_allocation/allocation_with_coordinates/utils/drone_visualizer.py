@@ -175,8 +175,8 @@ def animate_schedule(
     frames = int(total / dt) + 1
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    ax.set_xlim(0, world_size * 1.1)
-    ax.set_ylim(0, world_size * 1.1)
+    ax.set_xlim(0, world_size * 1.3)
+    ax.set_ylim(0, world_size * 1.3)
     ax.set_aspect('equal', adjustable='box')
     ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.3)
     ax.set_title("Drone & Object Map")
