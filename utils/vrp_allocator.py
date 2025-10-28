@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 from math import sqrt
 from ortools.sat.python import cp_model
 
@@ -20,7 +20,21 @@ def travel_time_from_to(drone_speed: float, a_xyz: Tuple[float, float, float], b
 # everything to integers (tenths of a time unit) using TIME_SCALE=10.
 # -------------------------
 
-def solve_vrp(objects: Dict[str, Tuple[int, int]], drones_data: Dict[str, Dict], subtasks: List[Dict]):
+def solve_vrp(objects: Dict[str, Tuple[int, int]], drones_data: Dict[str, Dict], subtasks: List[Dict]
+              ) -> Tuple[Dict[str,List[Dict]], float, str]:
+    """
+    Solves multi-drone scheduling and returns the optimal/feasible plan.
+
+    Args:
+        objects: Mapping of object names to (x, y, z) coordinates.
+        drones_data: Drone info with speed, skills, and positions.
+        subtasks: List of subtasks with required skill, object, and service time.
+
+    Returns:
+        schedule: Per-drone ordered task list.
+        makespan: Total mission completion time.
+        status: Optimal or feasible allocation.
+    """
     model = cp_model.CpModel()
 
     TIME_SCALE = 10  # one decimal resolution -> multiply all times by 10
@@ -119,7 +133,7 @@ def solve_vrp(objects: Dict[str, Tuple[int, int]], drones_data: Dict[str, Dict],
     model.Minimize(1000000 * makespan + sum(start[t] for t in tasks))
 
     solver = cp_model.CpSolver()
-    solver.parameters.max_time_in_seconds = 20.0
+    solver.parameters.max_time_in_seconds = 3
     solver.parameters.num_search_workers = 8
 
     status = solver.Solve(model)
@@ -160,11 +174,13 @@ def solve_vrp(objects: Dict[str, Tuple[int, int]], drones_data: Dict[str, Dict],
             lst[k]["departure_time"] = prev["finish_time"]
 
     solved_makespan = max((r["finish_time"] for lst in schedule.values() for r in lst), default=0.0)
+    status_out = "optimal" if status == cp_model.OPTIMAL else "feasible"
 
-    return schedule, solved_makespan
+    return schedule, solved_makespan, status_out
 
 
 if __name__ == "__main__":
+    from pprint import pprint
     objects = {
         "House1": (12, 87, 52),
         "RoofTop1": (45, 33, 42),
@@ -187,8 +203,7 @@ if __name__ == "__main__":
         {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]}
     ]  
 
-    schedule, ms = solve_vrp(objects, drones, subtasks_with_drones)
-    print("Solved multi-task schedule (min. makespan):")
-    for d, lst in schedule.items():
-        print(f"  {d}: {lst}")
-    print(f"Makespan = {ms}")
+    schedule, ms, status = solve_vrp(objects, drones, subtasks_with_drones)
+    pprint(schedule)
+    print(f"Status: {status}")
+    print(f"Makespan: {ms}")
