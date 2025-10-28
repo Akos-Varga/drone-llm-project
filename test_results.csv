@@ -1,4 +1,11 @@
-model,task,LLM_makespan,VRP_makespan,LLM_inference_time,error
-gpt-5-mini,Task1,5.0,5.0,21.8,
-gpt-5-mini,Task2,7.5,7.5,17.2,
-gpt-5-mini,Task3,6.5,6.5,18.4,
+model,task,LLM_makespan,VRP_makespan,VRP_status,LLM_inference_time,LLM_error
+gpt-4o-mini,Task1,,,,,SCHEDULER ERROR: SubTask1 is not found in schedule.
+gpt-4o-mini,Task2,3.6,3.6,optimal,5.8,
+gpt-4o-mini,Task3,6.5,6.5,optimal,5.3,
+gpt-4o-mini,Task4,,,,,SCHEDULER ERROR: SubTask1 is not found in schedule.
+gpt-4o-mini,Task5,,,,,SCHEDULER ERROR: SubTask2 is found multiple times in the schedule.
+gpt-4o-mini,Task6,,,,,SCHEDULER ERROR: SubTask1 is found multiple times in the schedule.
+gpt-4o-mini,Task7,,,,,SCHEDULER ERROR: SubTask3 is not found in schedule.
+gpt-4o-mini,Task8,,,,,SCHEDULER ERROR: SubTask1 is found multiple times in the schedule.
+gpt-4o-mini,Task9,13.4,8.5,optimal,2746.9,
+gpt-4o-mini,Task10,,,,,SCHEDULER ERROR: SubTask1 is found multiple times in the schedule.
