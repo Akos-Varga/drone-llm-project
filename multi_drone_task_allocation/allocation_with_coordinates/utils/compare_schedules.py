@@ -1,12 +1,10 @@
 import math
 from typing import Dict, List, Any
 
-
 def schedules_equal(
     sched1: Dict[str, List[Dict[str, Any]]],
     sched2: Dict[str, List[Dict[str, Any]]],
-    float_tol: float = 1e-3,
-    ignore_order: bool = True,
+    float_tol: float = 1e-3
 ) -> bool:
     """
     Compare two schedules for equality, ignoring drones with no assigned tasks.
@@ -19,25 +17,15 @@ def schedules_equal(
     if set(active1.keys()) != set(active2.keys()):
         return False
 
-    def normalize(task):
-        norm = {}
-        for k, v in task.items():
-            if isinstance(v, float):
-                norm[k] = round(v, 3)
-            else:
-                norm[k] = v
-        return norm
-
     for drone in active1.keys():
-        list1 = [normalize(t) for t in active1[drone]]
-        list2 = [normalize(t) for t in active2[drone]]
-
-        if ignore_order:
-            list1.sort(key=lambda t: t.get("name", ""))
-            list2.sort(key=lambda t: t.get("name", ""))
+        list1 = [t for t in active1[drone]]
+        list2 = [t for t in active2[drone]]
 
         if len(list1) != len(list2):
             return False
+
+        list1.sort(key=lambda t: t.get("name", ""))
+        list2.sort(key=lambda t: t.get("name", ""))
 
         for t1, t2 in zip(list1, list2):
             if set(t1.keys()) != set(t2.keys()):
