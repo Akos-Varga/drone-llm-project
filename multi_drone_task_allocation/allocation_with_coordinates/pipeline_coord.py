@@ -2,7 +2,7 @@ from decomposer_coord import messages as decomposer_prompt
 from allocator_coord import messages as allocator_prompt
 from scheduler_coord import messages as scheduler_prompt
 
-from test_tasks import task_list2
+from test_tasks import task_list
 from utils.travel_time import compute_travel_times
 from utils.schedule_validator import validate_schedule
 from utils.decomposer_validator import validate_decomposer
@@ -18,12 +18,12 @@ import ast
 import time
 import os
 
-# Message builder --------------------------------------------------------
+# Message builder --------------------------------------------------------------------------
 def build_message(prompt, content):
      # print(content)
      return [*prompt, {"role": "user", "content": content}]
 
-# Helpers  ---------------------------------------------------
+# Helpers  ---------------------------------------------------------------------------------
 def str_to_code(s):
     try:
       s = s.strip()
@@ -37,7 +37,7 @@ def str_to_code(s):
     except (SyntaxError, ValueError):
         return None
 
-# Models -----------------------------------------------------------------
+# Models -----------------------------------------------------------------------------------
 m1 = "codegemma:7b"
 m2 = "qwen2.5-coder:7b"
 m3 = "gpt-4o-mini"
@@ -46,6 +46,7 @@ m5 = "gpt-4.1-mini"
 m6 = "gpt-4.1"
 m7 = "gpt-5-mini"
 m8 = "gpt-5"
+model = m7
 
 # Skills & Objects and & Drones ------------------------------------------------------------
 skills = {
@@ -57,36 +58,33 @@ skills = {
 }
 
 objects = {
-    "Base": (18, 63),
-    "RoofTop1": (72, 9),
-    "RoofTop2": (41, 56),
-    "SolarPanel1": (85, 22),
-    "SolarPanel2": (87, 20),
-    "House1": (5, 44),
-    "House2": (92, 71),
-    "House3": (47, 36),
-    "Tower": (14, 7)
+    "Base": (18, 63, 53),
+    "RoofTop1": (72, 9, 72),
+    "RoofTop2": (41, 56, 41),
+    "SolarPanel1": (85, 22, 68),
+    "SolarPanel2": (87, 20, 92),
+    "House1": (5, 44, 28),
+    "House2": (92, 71, 68),
+    "House3": (47, 36, 86),
+    "Tower": (14, 7, 45)
 }
 
 drones = {
-  "Drone1": {"skills": ["CaptureThermalImage"], "pos": (27, 81), "speed": 15},
-  "Drone2": {"skills": ["MeasureWind","CaptureRGBImage"], "pos": (63, 14), "speed": 18},
-  "Drone3": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (92, 47), "speed": 12},
-  "Drone4": {"skills": ["CaptureRGBImage", "RecordVideo"], "pos": (39, 59), "speed": 19},
-  "Drone5": {"skills": ["CaptureThermalImage", "InspectStructure"], "pos": (8, 23), "speed": 11},
-  "Drone6": {"skills": ["MeasureWind"], "pos": (74, 66), "speed": 16}
+  "Drone1": {"skills": ["CaptureThermalImage"], "pos": (27, 81, 48), "speed": 15},
+  "Drone2": {"skills": ["MeasureWind","CaptureRGBImage"], "pos": (63, 14, 28), "speed": 18},
+  "Drone3": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (92, 47, 41), "speed": 12},
+  "Drone4": {"skills": ["CaptureRGBImage", "RecordVideo"], "pos": (39, 59, 39), "speed": 19},
+  "Drone5": {"skills": ["CaptureThermalImage", "InspectStructure"], "pos": (8, 23, 8), "speed": 11},
+  "Drone6": {"skills": ["MeasureWind"], "pos": (74, 66, 19), "speed": 16}
 }
 
 skills, objects, drones = randomizer(skills=skills, objects=objects, drones=drones)
 
-# Inference --------------------------------------------------------------
-model = m8
-#schedule_validator = ScheduleValidator(skills, objects, drones)
-
+# Inference --------------------------------------------------------------------------------
 out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saved_gifs")
 os.makedirs(out_dir, exist_ok=True)
 
-for task in task_list2[15:]:
+for task in task_list[10:12]:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
     startTime = time.time()
 
@@ -129,7 +127,7 @@ for task in task_list2[15:]:
     endTime = time.time()
 
     # Calculate with VRP (Vehicle Routing problem)
-    schedule_vrp, makespan_vrp = solve_vrp(subtasks_with_drones, drones, objects)
+    schedule_vrp, makespan_vrp = solve_vrp(objects, drones, subtasks_with_drones)
     print("\n\nSchedule by VRP:")
     pprint(schedule_vrp, sort_dicts=False)
     optimal_schedule = schedules_equal(schedule, schedule_vrp)
@@ -141,8 +139,8 @@ for task in task_list2[15:]:
     print(f"Inference time: {(endTime - startTime):.1f}")
 
     # Visualize
-    anim = animate_schedule(objects, drones, schedule, dt=0.1, extra_hold=1.5, save_path=os.path.join(out_dir, f"{task['id']}.gif"))
-    plt.show()
+    # anim = animate_schedule(objects, drones, schedule, dt=0.1, extra_hold=1.5, save_path=os.path.join(out_dir, f"{task['id']}.gif"))
+    # plt.show()
 
     # Update drone positions
     # for drone, info in schedule.items():

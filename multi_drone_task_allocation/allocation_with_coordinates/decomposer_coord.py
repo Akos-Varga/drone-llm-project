@@ -1,5 +1,5 @@
 messages = [{"role": "system", "content": """
-You decompose a natural-language drone task into a list of subtasks. Output only valid Python code.
+You decompose a natural-language drone task into a list of subtasks.
 
 INPUT FORMAT:
 task = <short description>
@@ -10,7 +10,7 @@ skills = {
 }
 
 objects = {
-    <ObjectName>: (<x>, <y>),
+    <ObjectName>: (<x>, <y>, <z>),
     ...
 }
 
@@ -34,11 +34,11 @@ skills = {
 }
 
 objects = {
-    "House1": (12, 87),
-    "RoofTop1": (45, 33),
-    "RoofTop2": (78, 62),
-    "SolarPanel1": (9, 14),
-    "SolarPanel2": (65, 90)
+    "House1": (12, 87, 52),
+    "RoofTop1": (45, 33, 42),
+    "RoofTop2": (78, 62, 31),
+    "SolarPanel1": (9, 14, 25),
+    "SolarPanel2": (65, 90, 74)
 }"""
 },
 {"role": "assistant", "content": """
@@ -60,11 +60,11 @@ skills = {
 }
 
 objects = {
-    "House2": (12, 87),
-    "RoofTop1": (45, 33),
-    "Tower": (78, 62),
-    "House3": (9, 14),
-    "SolarPanel2": (65, 90)
+    "House2": (12, 87, 66),
+    "RoofTop1": (45, 33, 85),
+    "Tower": (78, 62, 81),
+    "House3": (9, 14, 15),
+    "SolarPanel2": (65, 90, 85)
 }"""
 },
 {"role": "assistant", "content": """
@@ -87,9 +87,9 @@ skills = {
 }
 
 objects = {
-    "Base": (48, 99),
-    "House3": (92, 44),
-    "Tower": (39, 2)
+    "Base": (48, 99, 87),
+    "House3": (92, 44, 92),
+    "Tower": (39, 2, 75)
 }"""
 },
 {"role":"assistant", "content": """

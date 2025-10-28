@@ -62,57 +62,46 @@ if __name__ == "__main__":
     from travel_time import compute_travel_times
     
     skills = {
-        "RecordVideo": 0.5,
-        "CaptureRGBImage": 3
+        'CaptureRGBImage': 2.3,
+        'CaptureThermalImage': 1.6,
+        'RecordVideo': 2.2,
+        'InspectStructure': 1.6,
+        'MeasureWind': 0.7
     }
 
     objects = {
-    "Base": (48, 99),
-    "RoofTop1": (72, 9),
-    "RoofTop2": (41, 56),
-    "SolarPanel1": (85, 22),
-    "SolarPanel2": (87, 20),
-    "House1": (5, 44),
-    "House2": (92, 71),
-    "House3": (92, 44),
-    "Tower": (39, 2)
+        "House1": (12, 87, 52),
+        "RoofTop1": (45, 33, 42),
+        "RoofTop2": (78, 62, 31),
+        "SolarPanel1": (9, 14, 25),
+        "SolarPanel2": (65, 90, 74)
     }   
     
     drones = {
-    "Drone1": {"skills": ["MeasureWind", "RecordVideo"], "pos": (41, 85), "speed": 12},
-    "Drone2": {"skills": ["CaptureRGBImage", "MeasureWind"], "pos": (96, 37), "speed": 18},
-    "Drone3": {"skills": ["CaptureThermalImage", "InspectStructure", "CaptureRGBImage"], "pos": (73, 12), "speed": 15},
-    "Drone4": {"skills": ["InspectStructure"], "pos": (73, 12), "speed": 15}
+        "Drone1": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (23, 77, 47), "speed": 14},
+        "Drone2": {"skills": ["CaptureThermalImage"], "pos": (64, 12, 84), "speed": 17},
+        "Drone3": {"skills": ["CaptureRGBImage"], "pos": (89, 45, 31), "speed": 11},
+        "Drone4": {"skills": ["CaptureRGBImage", "CaptureThermalImage", "InspectStructure"], "pos": (35, 58, 42), "speed": 19},
+        "Drone5": {"skills": ["RecordVideo"], "pos": (10, 91, 20), "speed": 13}
     }
 
     subtasks_with_drones = [
-        {"name": "SubTask1", "skill": "RecordVideo", "object": "Tower", "service_time": 0.5, "drones": ["Drone1"]},
-        {"name": "SubTask2", "skill": "RecordVideo", "object": "House3", "service_time": 0.5, "drones": ["Drone1"]},
-        {"name": "SubTask3", "skill": "RecordVideo", "object": "Base", "service_time": 0.5, "drones": ["Drone1"]},
-        {"name": "SubTask4", "skill": "CaptureRGBImage", "object": "Tower", "service_time": 3, "drones": ["Drone2", "Drone3"]},
-        {"name": "SubTask5", "skill": "CaptureRGBImage", "object": "House3", "service_time": 3, "drones": ["Drone2", "Drone3"]},
-        {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "service_time": 3, "drones": ["Drone2", "Drone3"]}
-    ]    
+        {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]},
+        {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "service_time": 1.6, "drones": ["Drone1", "Drone2", "Drone4"]},
+        {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]}
+    ]   
 
     schedule = {
-    "Drone1": [
-        {"name": "SubTask3", "object": "Base", "skill": "RecordVideo",
-         "departure_time": 0.0, "arrival_time": 1.3, "finish_time": 1.8},
-        {"name": "SubTask2", "object": "House3", "skill": "RecordVideo",
-         "departure_time": 1.8, "arrival_time": 7.7, "finish_time": 8.2},
-        {"name": "SubTask1", "object": "Tower", "skill": "RecordVideo",
-         "departure_time": 8.2, "arrival_time": 13.8, "finish_time": 14.3}
-    ],
-    "Drone2": [
-        {"name": "SubTask5", "object": "House3", "skill": "CaptureRGBImage",
-         "departure_time": 0.0, "arrival_time": 0.4, "finish_time": 3.4},
-        {"name": "SubTask6", "object": "Base", "skill": "CaptureRGBImage",
-         "departure_time": 3.4, "arrival_time": 7.3, "finish_time": 10.3}
-    ],
-    "Drone3": [
-        {"name": "SubTask4", "object": "Tower", "skill": "CaptureRGBImage",
-         "departure_time": 0.0, "arrival_time": 2.4, "finish_time": 5.4}
-    ]
+        "Drone4": [
+            {"name": "SubTask1", "object": "RoofTop1", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 1.4, "finish_time": 3.7}
+        ],
+        "Drone2": [
+            {"name": "SubTask2", "object": "RoofTop2", "skill": "CaptureThermalImage", "departure_time": 0.0, "arrival_time": 4.4, "finish_time": 6.0}
+        ],
+        "Drone1": [
+            {"name": "SubTask3", "object": "House1", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 1.1, "finish_time": 3.4}
+        ],
+        "Drone3": []
     }
 
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)

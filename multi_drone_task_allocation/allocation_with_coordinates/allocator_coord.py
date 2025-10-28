@@ -1,9 +1,9 @@
 messages = [{"role": "system", "content": """
-You allocate subtasks to capable drones. Only output Python code.
+You allocate subtasks to capable drones.
              
 INPUT FORMAT:
 drones = {
-  <DroneName>: {"skills": [<SkillName>, ...], "pos": (<x>, <y>), "speed": <speed>},
+  <DroneName>: {"skills": [<SkillName>, ...], "pos": (<x>, <y>, <z>), "speed": <speed>},
   ...
 }        
 
@@ -27,11 +27,11 @@ subtasks_with_drones = [
 # Example 1 ------------------------------------------------------------------------------------------
 {"role":"user", "content": """
 drones = {
-  "Drone1": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (23, 77), "speed": 14},
-  "Drone2": {"skills": ["CaptureThermalImage"], "pos": (64, 12), "speed": 17},
-  "Drone3": {"skills": ["CaptureRGBImage"], "pos": (89, 45), "speed": 11},
-  "Drone4": {"skills": ["CaptureRGBImage", "CaptureThermalImage", "InspectStructure"], "pos": (35, 58), "speed": 19},
-  "Drone5": {"skills": ["RecordVideo"], "pos": (10, 91), "speed": 13}
+  "Drone1": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (23, 77, 47), "speed": 14},
+  "Drone2": {"skills": ["CaptureThermalImage"], "pos": (64, 12, 84), "speed": 17},
+  "Drone3": {"skills": ["CaptureRGBImage"], "pos": (89, 45, 31), "speed": 11},
+  "Drone4": {"skills": ["CaptureRGBImage", "CaptureThermalImage", "InspectStructure"], "pos": (35, 58, 42), "speed": 19},
+  "Drone5": {"skills": ["RecordVideo"], "pos": (10, 91, 20), "speed": 13}
 }
 
 subtasks = [
@@ -51,11 +51,11 @@ subtasks_with_drones = [
 # Example 2 --------------------------------------------------------------------------------------------
 {"role":"user", "content":"""
 drones = {
-  "Drone1": {"skills": ["CaptureThermalImage", "MeasureWind"], "pos": (42, 59), "speed": 14},
-  "Drone2": {"skills": ["InspectStructure"], "pos": (21, 88), "speed": 17},
-  "Drone3": {"skills": ["MeasureWind"], "pos": (8, 25), "speed": 19},
-  "Drone4": {"skills": ["InspectStructure"], "pos": (67, 34), "speed": 11},
-  "Drone5": {"skills": ["InspectStructure", "RecordVideo"], "pos": (90, 12), "speed": 16}
+  "Drone1": {"skills": ["CaptureThermalImage", "MeasureWind"], "pos": (42, 59, 27), "speed": 14},
+  "Drone2": {"skills": ["InspectStructure"], "pos": (21, 88, 4), "speed": 17},
+  "Drone3": {"skills": ["MeasureWind"], "pos": (8, 25, 28), "speed": 19},
+  "Drone4": {"skills": ["InspectStructure"], "pos": (67, 34, 47), "speed": 11},
+  "Drone5": {"skills": ["InspectStructure", "RecordVideo"], "pos": (90, 12, 39), "speed": 16}
 }
 
 subtasks = [
@@ -75,9 +75,9 @@ subtasks_with_drones = [
 # Example 3 --------------------------------------------------------------------------------------------
 {"role":"user", "content":"""
 drones = {
-  "Drone1": {"skills": ["MeasureWind", "RecordVideo"], "pos": (41, 85), "speed": 12},
-  "Drone2": {"skills": ["CaptureRGBImage", "MeasureWind"], "pos": (96, 37), "speed": 18},
-  "Drone3": {"skills": ["CaptureThermalImage", "InspectStructure", "CaptureRGBImage"], "pos": (73, 12), "speed": 15}
+  "Drone1": {"skills": ["MeasureWind", "RecordVideo"], "pos": (41, 85, 28), "speed": 12},
+  "Drone2": {"skills": ["CaptureRGBImage", "MeasureWind"], "pos": (96, 37, 33), "speed": 18},
+  "Drone3": {"skills": ["CaptureThermalImage", "InspectStructure", "CaptureRGBImage"], "pos": (73, 12, 36), "speed": 15}
 }
  
 subtasks = [

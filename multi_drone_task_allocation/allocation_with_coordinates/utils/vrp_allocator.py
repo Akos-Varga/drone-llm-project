@@ -3,45 +3,15 @@ from math import sqrt
 from ortools.sat.python import cp_model
 
 # -------------------------
-# Input data (from the user)
-# -------------------------
-subtasks_with_drones = [
-    {"name": "SubTask1", "skill": "InspectStructure", "object": "House2", "service_time": 0.7, "drones": ["Drone5"]},
-    {"name": "SubTask2", "skill": "MeasureWind", "object": "Base", "service_time": 2.9, "drones": ["Drone2", "Drone6"]},
-    {"name": "SubTask3", "skill": "RecordVideo", "object": "Tower", "service_time": 1.8, "drones": ["Drone4"]},
-]
-
-objects = {
-    "Base": (18, 63),
-    "RoofTop1": (72, 9),
-    "RoofTop2": (41, 56),
-    "SolarPanel1": (85, 22),
-    "SolarPanel2": (87, 20),
-    "House1": (5, 44),
-    "House2": (92, 71),
-    "House3": (47, 36),
-    "Tower": (14, 7),
-}
-
-drones = {
-    "Drone1": {"skills": ["CaptureThermalImage"], "pos": (27, 81), "speed": 15},
-    "Drone2": {"skills": ["MeasureWind", "CaptureRGBImage"], "pos": (63, 14), "speed": 18},
-    "Drone3": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (92, 47), "speed": 12},
-    "Drone4": {"skills": ["CaptureRGBImage", "RecordVideo"], "pos": (39, 59), "speed": 19},
-    "Drone5": {"skills": ["CaptureThermalImage", "InspectStructure"], "pos": (8, 23), "speed": 11},
-    "Drone6": {"skills": ["MeasureWind"], "pos": (74, 66), "speed": 16},
-}
-
-# -------------------------
 # Helper functions
 # -------------------------
 
-def euclid(a: Tuple[float, float], b: Tuple[float, float]) -> float:
-    return sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+def euclid(a: Tuple[float, float, float], b: Tuple[float, float, float]) -> float:
+    return sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2)
 
 
-def travel_time_from_to(drone_speed: float, a_xy: Tuple[float, float], b_xy: Tuple[float, float]) -> float:
-    return euclid(a_xy, b_xy) / drone_speed
+def travel_time_from_to(drone_speed: float, a_xyz: Tuple[float, float, float], b_xyz: Tuple[float, float, float]) -> float:
+    return euclid(a_xyz, b_xyz) / drone_speed
 
 
 # -------------------------
@@ -50,7 +20,7 @@ def travel_time_from_to(drone_speed: float, a_xy: Tuple[float, float], b_xy: Tup
 # everything to integers (tenths of a time unit) using TIME_SCALE=10.
 # -------------------------
 
-def solve_vrp(subtasks: List[Dict], drones_data: Dict[str, Dict], objects: Dict[str, Tuple[int, int]]):
+def solve_vrp(objects: Dict[str, Tuple[int, int]], drones_data: Dict[str, Dict], subtasks: List[Dict]):
     model = cp_model.CpModel()
 
     TIME_SCALE = 10  # one decimal resolution -> multiply all times by 10
@@ -195,7 +165,29 @@ def solve_vrp(subtasks: List[Dict], drones_data: Dict[str, Dict], objects: Dict[
 
 
 if __name__ == "__main__":
-    schedule, ms = solve_vrp(subtasks_with_drones, drones, objects)
+    objects = {
+        "House1": (12, 87, 52),
+        "RoofTop1": (45, 33, 42),
+        "RoofTop2": (78, 62, 31),
+        "SolarPanel1": (9, 14, 25),
+        "SolarPanel2": (65, 90, 74)
+    }   
+    
+    drones = {
+        "Drone1": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (23, 77, 47), "speed": 14},
+        "Drone2": {"skills": ["CaptureThermalImage"], "pos": (64, 12, 84), "speed": 17},
+        "Drone3": {"skills": ["CaptureRGBImage"], "pos": (89, 45, 31), "speed": 11},
+        "Drone4": {"skills": ["CaptureRGBImage", "CaptureThermalImage", "InspectStructure"], "pos": (35, 58, 42), "speed": 19},
+        "Drone5": {"skills": ["RecordVideo"], "pos": (10, 91, 20), "speed": 13}
+    }
+
+    subtasks_with_drones = [
+        {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "RoofTop1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]},
+        {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "RoofTop2", "service_time": 1.6, "drones": ["Drone1", "Drone2", "Drone4"]},
+        {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]}
+    ]  
+
+    schedule, ms = solve_vrp(objects, drones, subtasks_with_drones)
     print("Solved multi-task schedule (min. makespan):")
     for d, lst in schedule.items():
         print(f"  {d}: {lst}")

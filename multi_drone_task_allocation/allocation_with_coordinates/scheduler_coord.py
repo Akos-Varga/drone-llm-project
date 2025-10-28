@@ -1,6 +1,6 @@
 messages = [
 {"role": "system", "content": """
-You are a task scheduler for a multi-drone system. Only output Python code.
+You are a task scheduler for a multi-drone system.
 
 INPUT FORMAT:
 subtasks_with_drones = [
@@ -23,11 +23,11 @@ CONSTRAINTS:
 
 OUTPUT FORMAT:
 schedule = {
-  <DroneName>: [
-    {"name": <SubTaskName>, "object": <ObjectName>, "skill": <SkillName>, "departure_time": <DepartureTime>, "arrival_time": <ArrivalTime>, "finish_time": <FinishTime>},
+    <DroneName>: [
+        {"name": <SubTaskName>, "object": <ObjectName>, "skill": <SkillName>, "departure_time": <DepartureTime>, "arrival_time": <ArrivalTime>, "finish_time": <FinishTime>},
+        ...
+    ],
     ...
- ],
- ...
 }"""
 },
 
@@ -39,21 +39,18 @@ subtasks_with_drones = [
     {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House1", "service_time": 2.3, "drones": ["Drone1", "Drone3", "Drone4"]}
 ]
 
-travel_times = {'drone_to_object': {'Drone1': {'RoofTop1': 3.5, 'RoofTop2': 4.1, 'House1': 1.1}, 'Drone3': {'RoofTop1': 4.1, 'House1': 8.0}, 'Drone4': {'RoofTop1': 1.4, 'RoofTop2': 2.3, 'House1': 1.9}, 'Drone2': {'RoofTop2': 3.1}}, 'drone_object_to_object': {'Drone1': {'RoofTop1': {'RoofTop1': 0.0, 'RoofTop2': 3.1, 'House1': 4.5}, 'RoofTop2': {'RoofTop1': 3.1, 'RoofTop2': 0.0, 'House1': 5.0}, 'House1': {'RoofTop1': 4.5, 'RoofTop2': 5.0, 'House1': 0.0}}, 'Drone3': {'RoofTop1': {'RoofTop1': 0.0, 'House1': 5.8}, 'House1': {'RoofTop1': 5.8, 'House1': 0.0}}, 'Drone4': {'RoofTop1': {'RoofTop1': 0.0, 'RoofTop2': 2.3, 'House1': 3.3}, 'RoofTop2': {'RoofTop1': 2.3, 'RoofTop2': 0.0, 'House1': 3.7}, 'House1': {'RoofTop1': 3.3, 'RoofTop2': 3.7, 'House1': 0.0}}, 'Drone2': {'RoofTop2': {'RoofTop2': 0.0}}}}"""
+travel_times = {'drone_to_object': {'Drone1': {'RoofTop1': 3.5, 'RoofTop2': 4.2, 'House1': 1.1}, 'Drone3': {'RoofTop1': 4.3, 'House1': 8.2}, 'Drone4': {'RoofTop1': 1.4, 'RoofTop2': 2.3, 'House1': 2.0}, 'Drone2': {'RoofTop2': 4.4}}, 'drone_object_to_object': {'Drone1': {'RoofTop1': {'RoofTop1': 0.0, 'RoofTop2': 3.2, 'House1': 4.6}, 'RoofTop2': {'RoofTop1': 3.2, 'RoofTop2': 0.0, 'House1': 5.3}, 'House1': {'RoofTop1': 4.6, 'RoofTop2': 5.3, 'House1': 0.0}}, 'Drone3': {'RoofTop1': {'RoofTop1': 0.0, 'House1': 5.8}, 'House1': {'RoofTop1': 5.8, 'House1': 0.0}}, 'Drone4': {'RoofTop1': {'RoofTop1': 0.0, 'RoofTop2': 2.4, 'House1': 3.4}, 'RoofTop2': {'RoofTop1': 2.4, 'RoofTop2': 0.0, 'House1': 3.9}, 'House1': {'RoofTop1': 3.4, 'RoofTop2': 3.9, 'House1': 0.0}}, 'Drone2': {'RoofTop2': {'RoofTop2': 0.0}}}}"""
 },
 {"role": "assistant", "content": """
 schedule = {
     "Drone4": [
-        {"name": "SubTask1", "object": "RoofTop1", "skill": "CaptureRGBImage",
-         "departure_time": 0.0, "arrival_time": 1.4, "finish_time": 3.7}
+        {"name": "SubTask1", "object": "RoofTop1", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 1.4, "finish_time": 3.7}
     ],
     "Drone2": [
-        {"name": "SubTask2", "object": "RoofTop2", "skill": "CaptureThermalImage",
-         "departure_time": 0.0, "arrival_time": 3.1, "finish_time": 4.7}
+        {"name": "SubTask2", "object": "RoofTop2", "skill": "CaptureThermalImage", "departure_time": 0.0, "arrival_time": 4.4, "finish_time": 6.0}
     ],
     "Drone1": [
-        {"name": "SubTask3", "object": "House1", "skill": "CaptureRGBImage",
-         "departure_time": 0.0, "arrival_time": 1.1, "finish_time": 3.4}
+        {"name": "SubTask3", "object": "House1", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 1.1, "finish_time": 3.4}
     ],
     "Drone3": []
 }"""
@@ -67,23 +64,20 @@ subtasks_with_drones = [
     {"name": "SubTask3", "skill": "MeasureWind", "object": "House3", "service_time": 2.2, "drones": ["Drone1", "Drone3"]}
 ]
 
-travel_times = {'drone_to_object': {'Drone2': {'Tower': 4.5}, 'Drone4': {'Tower': 5.8}, 'Drone5': {'Tower': 5.2}, 'Drone1': {'House2': 3.8, 'House3': 1.1}, 'Drone3': {'House2': 5.0, 'House3': 2.7}}, 'drone_object_to_object': {'Drone2': {'Tower': {'Tower': 0.0}}, 'Drone4': {'Tower': {'Tower': 0.0}}, 'Drone5': {'Tower': {'Tower': 0.0}}, 'Drone1': {'House2': {'House2': 0.0, 'House3': 3.2}, 'House3': {'House2': 3.2, 'House3': 0.0}}, 'Drone3': {'House2': {'House2': 0.0, 'House3': 2.3}, 'House3': {'House2': 2.3, 'House3': 0.0}}}}"""
+travel_times = {'drone_to_object': {'Drone2': {'Tower': 5.8}, 'Drone4': {'Tower': 4.1}, 'Drone5': {'Tower': 4.1}, 'Drone1': {'House2': 4.0, 'House3': 4.1}, 'Drone3': {'House2': 3.8, 'House3': 0.9}}, 'drone_object_to_object': {'Drone2': {'Tower': {'Tower': 0.0}}, 'Drone4': {'Tower': {'Tower': 0.0}}, 'Drone5': {'Tower': {'Tower': 0.0}}, 'Drone1': {'House2': {'House2': 0.0, 'House3': 6.4}, 'House3': {'House2': 6.4, 'House3': 0.0}}, 'Drone3': {'House2': {'House2': 0.0, 'House3': 4.7}, 'House3': {'House2': 4.7, 'House3': 0.0}}}}"""
 },
 {"role": "assistant","content": """
 schedule = {
-    "Drone2": [
-        {"name": "SubTask1", "object": "Tower", "skill": "InspectStructure",
-         "departure_time": 0.0, "arrival_time": 4.5, "finish_time": 6.5}
-    ],
     "Drone1": [
-        {"name": "SubTask2", "object": "House2", "skill": "MeasureWind",
-         "departure_time": 0.0, "arrival_time": 3.8, "finish_time": 6.0}
+        {"name": "SubTask2", "object": "House2", "skill": "MeasureWind", "departure_time": 0.0, "arrival_time": 4.0, "finish_time": 6.2}
     ],
+    "Drone2": [],
     "Drone3": [
-        {"name": "SubTask3", "object": "House3", "skill": "MeasureWind",
-         "departure_time": 0.0, "arrival_time": 2.7, "finish_time": 4.9}
+        {"name": "SubTask3", "object": "House3", "skill": "MeasureWind", "departure_time": 0.0, "arrival_time": 0.9, "finish_time": 3.1}
     ],
-    "Drone4": [],
+    "Drone4": [
+        {"name": "SubTask1", "object": "Tower", "skill": "InspectStructure", "departure_time": 0.0, "arrival_time": 4.1, "finish_time": 6.1}
+    ],
     "Drone5": []
 }"""
 },
@@ -99,27 +93,21 @@ subtasks_with_drones = [
     {"name": "SubTask6", "skill": "CaptureRGBImage", "object": "Base", "service_time": 3, "drones": ["Drone2", "Drone3"]}
 ]
  
-travel_times = {'drone_to_object': {'Drone1': {'Tower': 6.9, 'House3': 5.5, 'Base': 1.3}, 'Drone2': {'Tower': 3.7, 'House3': 0.4, 'Base': 4.4}, 'Drone3': {'Tower': 2.4, 'House3': 2.5, 'Base': 6.0}}, 'drone_object_to_object': {'Drone1': {'Tower': {'Tower': 0.0, 'House3': 5.6, 'Base': 8.1}, 'House3': {'Tower': 5.6, 'House3': 0.0, 'Base': 5.9}, 'Base': {'Tower': 8.1, 'House3': 5.9, 'Base': 0.0}}, 'Drone2': {'Tower': {'Tower': 0.0, 'House3': 3.8, 'Base': 5.4}, 'House3': {'Tower': 3.8, 'House3': 0.0, 'Base': 3.9}, 'Base': {'Tower': 5.4, 'House3': 3.9, 'Base': 0.0}}, 'Drone3': {'Tower': {'Tower': 0.0, 'House3': 4.5, 'Base': 6.5}, 'House3': {'Tower': 4.5, 'House3': 0.0, 'Base': 4.7}, 'Base': {'Tower': 6.5, 'House3': 4.7, 'Base': 0.0}}}}"""
+travel_times = {'drone_to_object': {'Drone1': {'Tower': 8.0, 'House3': 7.6, 'Base': 5.1}, 'Drone2': {'Tower': 4.4, 'House3': 3.3, 'Base': 5.3}, 'Drone3': {'Tower': 3.5, 'House3': 4.5, 'Base': 6.9}}, 'drone_object_to_object': {'Drone1': {'Tower': {'Tower': 0.0, 'House3': 5.8, 'Base': 8.2}, 'House3': {'Tower': 5.8, 'House3': 0.0, 'Base': 5.9}, 'Base': {'Tower': 8.2, 'House3': 5.9, 'Base': 0.0}}, 'Drone2': {'Tower': {'Tower': 0.0, 'House3': 3.9, 'Base': 5.5}, 'House3': {'Tower': 3.9, 'House3': 0.0, 'Base': 3.9}, 'Base': {'Tower': 5.5, 'House3': 3.9, 'Base': 0.0}}, 'Drone3': {'Tower': {'Tower': 0.0, 'House3': 4.6, 'Base': 6.5}, 'House3': {'Tower': 4.6, 'House3': 0.0, 'Base': 4.7}, 'Base': {'Tower': 6.5, 'House3': 4.7, 'Base': 0.0}}}}"""
 },
 {"role": "assistant", "content": """
 schedule = {
     "Drone1": [
-        {"name": "SubTask3", "object": "Base", "skill": "RecordVideo",
-         "departure_time": 0.0, "arrival_time": 1.3, "finish_time": 1.8},
-        {"name": "SubTask2", "object": "House3", "skill": "RecordVideo",
-         "departure_time": 1.8, "arrival_time": 7.7, "finish_time": 8.2},
-        {"name": "SubTask1", "object": "Tower", "skill": "RecordVideo",
-         "departure_time": 8.2, "arrival_time": 13.8, "finish_time": 14.3}
+        {"name": "SubTask3", "object": "Base", "skill": "RecordVideo", "departure_time": 0.0, "arrival_time": 5.1, "finish_time": 5.6},
+        {"name": "SubTask2", "object": "House3", "skill": "RecordVideo", "departure_time": 5.6, "arrival_time": 11.5, "finish_time": 12.0},
+        {"name": "SubTask1", "object": "Tower", "skill": "RecordVideo", "departure_time": 12.0, "arrival_time": 17.8, "finish_time": 18.3}
     ],
     "Drone2": [
-        {"name": "SubTask5", "object": "House3", "skill": "CaptureRGBImage",
-         "departure_time": 0.0, "arrival_time": 0.4, "finish_time": 3.4},
-        {"name": "SubTask6", "object": "Base", "skill": "CaptureRGBImage",
-         "departure_time": 3.4, "arrival_time": 7.3, "finish_time": 10.3}
+        {"name": "SubTask5", "object": "House3", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 3.3, "finish_time": 6.3},
+        {"name": "SubTask4", "object": "Tower", "skill": "CaptureRGBImage", "departure_time": 6.3, "arrival_time": 10.2, "finish_time": 13.2}
     ],
     "Drone3": [
-        {"name": "SubTask4", "object": "Tower", "skill": "CaptureRGBImage",
-         "departure_time": 0.0, "arrival_time": 2.4, "finish_time": 5.4}
+        {"name": "SubTask6", "object": "Base", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 6.9, "finish_time": 9.9}
     ]
 }"""
 },

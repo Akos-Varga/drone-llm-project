@@ -216,7 +216,7 @@ task_list = [
     ]},
 
     # === 10-subtask tasks ===
-    {"id": "Task28", "task": "Take RGB and thermal images of all houses and rooftops", "solution": [
+    {"id": "Task28", "task": "Take RGB and thermal images of all houses and rooftops.", "solution": [
         {"name": "SubTask1", "skill": "CaptureRGBImage", "object": "House1"},
         {"name": "SubTask2", "skill": "CaptureThermalImage", "object": "House1"},
         {"name": "SubTask3", "skill": "CaptureRGBImage", "object": "House2"},
