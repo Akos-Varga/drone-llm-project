@@ -2,12 +2,10 @@ def validate_schedule(skills, objects, drones, subtasks_with_drones, travel_time
     # Check if drones and objects are valid
     for drone, tasks in schedule.items():
         if drone not in drones:
-            print(f"SCHEDULER ERROR: {drone} is not in drone list.")
-            return False, 0
+            return f"SCHEDULER ERROR: {drone} is not in drone list.", None
         for task in tasks:
             if task["object"] not in objects:
-                print(f"SCHEDULER ERROR: Object: {task["object"]} is invalid in {task["name"]}.")
-                return False, 0
+                return f"SCHEDULER ERROR: Object: {task["object"]} is invalid in {task["name"]}.", None
 
     # Check if schedule has all subtasks ONCE   
     for subtask_allocator in subtasks_with_drones:
@@ -17,18 +15,15 @@ def validate_schedule(skills, objects, drones, subtasks_with_drones, travel_time
                 if subtask_allocator["name"] == subtask_schedule["name"]:
                     found +=1
         if found == 0:
-            print(f"SCHEDULER ERROR: {subtask_allocator["name"]} is not found in schedule.")
-            return False, 0
+            return f"SCHEDULER ERROR: {subtask_allocator["name"]} is not found in schedule.", None
         if found > 1:
-            print(f"SCHEDULER ERROR: {subtask_allocator["name"]} is found multiple times in the schedule.")
-            return False, 0
+            return f"SCHEDULER ERROR: {subtask_allocator["name"]} is found multiple times in the schedule.", None
 
     # Check if drone has skill 
     for drone, tasks in schedule.items():
         for task in tasks:
             if task["skill"] not in drones[drone]["skills"]:
-                print(f"SCHEDULER ERROR: {task["skill"]} is not a valid skill for {drone}")
-                return False, 0
+                return f"SCHEDULER ERROR: {task["skill"]} is not a valid skill for {drone}", None
 
     # Check if timing is good
     makespan = 0
@@ -38,23 +33,18 @@ def validate_schedule(skills, objects, drones, subtasks_with_drones, travel_time
         for task in tasks:
             endObject = task["object"]
             if prevEndTime > task["departure_time"]:
-                print(f"SCHEDULER ERROR: Departure before previous task is finished for {task["name"]}")
-                return False, 0
+                return f"SCHEDULER ERROR: Departure before previous task is finished for {task["name"]}", None
             if startObject == "" and travel_times["drone_to_object"][drone][endObject] != round(task["arrival_time"] - task["departure_time"], 1):
-                print(f"SCHEDULER ERROR: Invalid traveltime for {task["name"]}. Expected: {travel_times["drone_to_object"][drone][endObject]} Got: {round(task["arrival_time"] - task["departure_time"], 1)}")
-                return False, 0
+                return f"SCHEDULER ERROR: Invalid traveltime for {task["name"]}. Expected: {travel_times["drone_to_object"][drone][endObject]} Got: {round(task["arrival_time"] - task["departure_time"], 1)}", None
             if startObject != "" and travel_times["drone_object_to_object"][drone][startObject][endObject] != round(task["arrival_time"] - task["departure_time"], 1):
-                print(f"SCHEDULER ERROR: Invalid traveltime for {task["name"]}. Expected: {travel_times["drone_object_to_object"][drone][startObject][endObject]} Got: {round(task["arrival_time"] - task["departure_time"], 1)}")
-                return False, 0
+                return f"SCHEDULER ERROR: Invalid traveltime for {task["name"]}. Expected: {travel_times["drone_object_to_object"][drone][startObject][endObject]} Got: {round(task["arrival_time"] - task["departure_time"], 1)}", None
             if round(task["finish_time"] - task["arrival_time"], 1) != skills[task["skill"]]:
-                print(f"SCHEDULER ERROR: Invalid service time for {task["name"]}. Expected {skills[task["skill"]]} Got: {round(task["finish_time"] - task["arrival_time"], 1)}")
-                return False, 0
+                return f"SCHEDULER ERROR: Invalid service time for {task["name"]}. Expected {skills[task["skill"]]} Got: {round(task["finish_time"] - task["arrival_time"], 1)}", None
             startObject = endObject
             prevEndTime = task["finish_time"]
         makespan = max(makespan, prevEndTime)
 
-    print("VALID SCHEDULE")
-    return True, makespan
+    return None, makespan
 
 
 
@@ -107,4 +97,9 @@ if __name__ == "__main__":
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
     # print(travel_times)
 
-    print(validate_schedule(skills, objects, drones, subtasks_with_drones, travel_times, schedule))
+    error, makespan = validate_schedule(skills, objects, drones, subtasks_with_drones, travel_times, schedule)
+
+    if error:
+        print(error)
+    else:
+        print(f"Makespan: {makespan}")

@@ -1,6 +1,6 @@
-from decomposer import messages as decomposer_prompt
-from allocator import messages as allocator_prompt
-from scheduler import messages as scheduler_prompt
+from pipeline.decomposer import messages as decomposer_prompt
+from pipeline.allocator import messages as allocator_prompt
+from pipeline.scheduler import messages as scheduler_prompt
 
 from test_tasks import task_list
 from utils.travel_time import compute_travel_times
@@ -14,6 +14,7 @@ from utils.compare_schedules import schedules_equal
 
 import matplotlib.pyplot as plt
 from pprint import pprint
+import pandas as pd
 import ast
 import time
 import os
@@ -84,7 +85,9 @@ skills, objects, drones = randomizer(skills=skills, objects=objects, drones=dron
 out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saved_gifs")
 os.makedirs(out_dir, exist_ok=True)
 
-for task in task_list[:1]:
+test_results = pd.DataFrame(columns=["model", "task", "LLM_makespan", "VRP_makespan", "LLM_inference_time", "error"])
+
+for task in task_list[:3]:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
     startTime = time.time()
 
@@ -94,11 +97,15 @@ for task in task_list[:1]:
     decomposed_task_str = LM(model=model, messages=decomposer_message, printing=False)
     print(f"\n\nDecomposed task: {decomposed_task_str}")
     decomposed_task = str_to_code(decomposed_task_str)
-    if decomposed_task == None:
-        print(f"\n\nERROR: decomposed_task conversion failed\n\n")
+    if not decomposed_task:
+        error = "ERROR: decomposed_task conversion failed"
+        print(f"\n\n{error}")
+        test_results.loc[len(test_results)] = [model, task["id"], None, None, None, error] # Save result than continue
         continue
-    valid = validate_decomposer(decomposed_task, task["solution"], skills)
-    if not valid:
+    error = validate_decomposer(decomposed_task, task["solution"], skills)
+    if error:
+        print(f"\n\n{error}")
+        test_results.loc[len(test_results)] = [model, task["id"], None, None, None, error] # Save result than continue
         continue
 
     # Allocator
@@ -107,8 +114,10 @@ for task in task_list[:1]:
     subtasks_with_drones_str = LM(model=model, messages=allocator_message, printing=False)
     print(f"\n\nAllocated task: {subtasks_with_drones_str}")
     subtasks_with_drones = str_to_code(subtasks_with_drones_str)
-    if subtasks_with_drones == None:
-        print(f"\n\nERROR: subtasks_with_drones conversion failed")
+    if not subtasks_with_drones:
+        error = "ERROR: subtasks_with_drones conversion failed"
+        print(f"\n\n{error}")
+        test_results.loc[len(test_results)] = [model, task["id"], None, None, None, error] # Save result than continue
         continue
     travel_times = compute_travel_times(objects, drones, subtasks_with_drones)
     # pprint(travel_times, sort_dicts=False)
@@ -119,10 +128,15 @@ for task in task_list[:1]:
     schedule_str = LM(model=model, messages=scheduler_message, printing=False)
     print(f"\n\nScheduled task: {schedule_str}")
     schedule = str_to_code(schedule_str)
-    if schedule == None:
+    if not schedule:
+        error = "ERROR: schedule conversion failed"
+        print(f"\n\n{error}")
+        test_results.loc[len(test_results)] = [model, task["id"], None, None, None, error] # Save result than continue
         continue
-    valid, makespan = validate_schedule(skills, objects, drones, subtasks_with_drones, travel_times, schedule)
-    if not valid:
+    error, makespan = validate_schedule(skills, objects, drones, subtasks_with_drones, travel_times, schedule)
+    if error:
+        print(f"\n\n{error}")
+        test_results.loc[len(test_results)] = [model, task["id"], None, None, None, error] # Save result than continue
         continue
     endTime = time.time()
 
@@ -130,13 +144,16 @@ for task in task_list[:1]:
     schedule_vrp, makespan_vrp = solve_vrp(objects, drones, subtasks_with_drones)
     print("\n\nSchedule by VRP:")
     pprint(schedule_vrp, sort_dicts=False)
-    optimal_schedule = schedules_equal(schedule, schedule_vrp)
-    if optimal_schedule:
+    identical_schedule = schedules_equal(schedule, schedule_vrp)
+    if identical_schedule:
         print("\n\nSchedules are identical.")
     else:
         print("\n\nSchedules are different.")
-    print(f"\n\nMakespan:\n\tLLM: {makespan}\n\tVRP: {makespan_vrp}")
-    print(f"Inference time: {(endTime - startTime):.1f}")
+    inference_time = round(endTime - startTime, 1)
+    print(f"\n\nMakespan:\n\tLLM: {makespan}\n\tVRP: {makespan_vrp}\nInference time: {inference_time}")
+
+    # Save results
+    test_results.loc[len(test_results)] = [model, task["id"], makespan, makespan_vrp, inference_time, None]
 
     # Visualize
     # anim = animate_schedule(objects, drones, schedule, dt=0.1, extra_hold=1.5, save_path=os.path.join(out_dir, f"{task['id']}.gif"))
@@ -146,3 +163,6 @@ for task in task_list[:1]:
     # for drone, info in schedule.items():
     #     if info:
     #         drones[drone]["pos"] = objects[info[-1]["object"]]
+
+test_results.to_csv("test_results.csv", index=False)
+print("\n\nTest results saved")

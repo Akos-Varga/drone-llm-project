@@ -1,30 +1,25 @@
 def validate_decomposer(decomposed_task, solution, skills):
     # Check number of entries are the same
     if len(solution) != len(decomposed_task):
-        print("DECOMPOSER ERROR: Subtask number mismatch")
-        return False
+        return "DECOMPOSER ERROR: Subtask number mismatch"
     
     # Check if task names are the same
     expected_names = {s["name"] for s in solution}
     actual_names = {s["name"] for s in decomposed_task}
     if expected_names != actual_names:
-        print("DECOMPOSER ERROR: Subtask name mismatch")
-        return False
+        return "DECOMPOSER ERROR: Subtask name mismatch"
     
     for subtask in decomposed_task:
         if subtask["service_time"] != skills[subtask["skill"]]:
-            print(f"DECOMPOSER ERROR: Wrong service time for {subtask["name"]}.")
-            return False
+            return f"DECOMPOSER ERROR: Wrong service time for {subtask["name"]}."
     
     # Check if skill and objects are the same
     expected_set = {(s["skill"], s["object"]) for s in solution}
     actual_set = {(s["skill"], s["object"]) for s in decomposed_task}
     if expected_set != actual_set:
-        print("DECOMPOSER ERROR: Skill-object mismatch")
-        return False
+        return "DECOMPOSER ERROR: Skill-object mismatch"
     
-    print("VALID DECOMPOSITION")
-    return True
+    return None
 
 if __name__ == "__main__":
     solution = [
@@ -45,4 +40,10 @@ if __name__ == "__main__":
         "CaptureRGBImage": 2.4,
         "CaptureThermalImage": 1
     }
-    print(validate_decomposer(subtasks, solution, skills))
+
+    err = validate_decomposer(subtasks, solution, skills)
+
+    if err:
+        print(err)
+    else:
+        print("OK")

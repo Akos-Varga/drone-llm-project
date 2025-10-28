@@ -1,13 +1,5 @@
 .env
 .venv
-gpu_specs.py
-test.py
-models/
-voxl2/
-GSCE/
-LiP-LLM/
+saved_gifs/
+misc/
 __pycache__/
-gpu_specs.py
-multi_drone_task_allocation/allocation_with_coordinates/saved_gifs/
-multi_drone_task_allocation/allocation_with_coordinates/old/
-multi_drone_task_allocation/allocation_with_dependencies/
