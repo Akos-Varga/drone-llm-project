@@ -1,3 +1,7 @@
+# Fix texts going out of screen
+# Show task description as title
+# Show time
+
 from typing import Dict, Tuple, List, Any, Optional
 
 import matplotlib.pyplot as plt
@@ -161,6 +165,10 @@ def animate_schedule(
     extra_hold: float = 2.0,
     save_path: Optional[str] = None,
 ):
+    # Remove z dimension for viz
+    objects = {k:v[:2] for k, v in objects.items()}
+    for d in drones: drones[d]["pos"] = drones[d]["pos"][:2]
+
     (
         segments,
         total_time,
@@ -294,68 +302,36 @@ if __name__ == "__main__":
     import os
 
     objects = {
-        "Base": (18, 63),
-        "RoofTop1": (72, 9),
-        "RoofTop2": (41, 56),
-        "SolarPanel1": (85, 22),
-        "SolarPanel2": (87, 20),
-        "House1": (5, 44),
-        "House2": (92, 71),
-        "House3": (47, 36),
-        "Tower": (14, 7),
-    }
-
+        "House1": (12, 87, 52),
+        "RoofTop1": (45, 33, 42),
+        "RoofTop2": (78, 62, 31),
+        "SolarPanel1": (9, 14, 25),
+        "SolarPanel2": (65, 90, 74)
+    }   
+    
     drones = {
-        "Drone1": {"skills": ["CaptureThermalImage", "PickupPayload", "ReleasePayload"], "pos": (27, 81), "speed": 15},
-        "Drone2": {"skills": ["PickupPayload", "ReleasePayload", "CaptureRGBImage"], "pos": (63, 14), "speed": 18},
-        "Drone3": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (92, 47), "speed": 12},
-        "Drone4": {"skills": ["CaptureRGBImage", "RecordVideo"], "pos": (39, 59), "speed": 19},
-        "Drone5": {"skills": ["CaptureThermalImage"], "pos": (8, 23), "speed": 11},
-        "Drone6": {"skills": ["PickupPayload", "ReleasePayload"], "pos": (74, 66), "speed": 16},
-    }
+        "Drone1": {"skills": ["CaptureRGBImage", "CaptureThermalImage"], "pos": (23, 77, 47), "speed": 14},
+        "Drone2": {"skills": ["CaptureThermalImage"], "pos": (64, 12, 84), "speed": 17},
+        "Drone3": {"skills": ["CaptureRGBImage"], "pos": (89, 45, 31), "speed": 11},
+        "Drone4": {"skills": ["CaptureRGBImage", "CaptureThermalImage", "InspectStructure"], "pos": (35, 58, 42), "speed": 19},
+        "Drone5": {"skills": ["RecordVideo"], "pos": (10, 91, 20), "speed": 13}
+    }  
 
-    schedule2 = {
-        "Drone1": [],
-        "Drone3": [
-            {"name": "SubTask2", "object": "SolarPanel1", "skill": "CaptureThermalImage",
-             "departure_time": 0.0, "arrival_time": 2.2, "finish_time": 10},
-             {"name": "SubTask3", "object": "Tower", "skill": "CaptureThermalImage",
-             "departure_time": 10, "arrival_time": 15, "finish_time": 20}
-        ],
-        "Drone5": [{"name": "SubTask1", "object": "SolarPanel1", "skill": "CaptureThermalImage",
-             "departure_time": 1, "arrival_time": 2, "finish_time": 11},
-             {"name": "SubTask4", "object": "Base", "skill": "CaptureThermalImage",
-             "departure_time": 11, "arrival_time": 17, "finish_time": 24},]
-             
-    }
-
-    schedule3 = {
-        "Drone2": [
-            {"name": "SubTask1", "object": "Base", "skill": "CaptureRGBImage",
-             "departure_time": 0.0, "arrival_time": 3.7, "finish_time": 6.3},
-        ],
-        "Drone3": [],
+    schedule = {
         "Drone4": [
-            {"name": "SubTask3", "object": "House3", "skill": "RecordVideo",
-             "departure_time": 0.0, "arrival_time": 1.3, "finish_time": 3.1},
-            {"name": "SubTask2", "object": "House1", "skill": "RecordVideo",
-             "departure_time": 3.1, "arrival_time": 5.4, "finish_time": 7.2},
+            {"name": "SubTask1", "object": "RoofTop1", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 1.4, "finish_time": 3.7}
         ],
-        "Drone6": [
-            {"name": "SubTask4", "object": "RoofTop2", "skill": "MeasureWind",
-             "departure_time": 0.0, "arrival_time": 2.2, "finish_time": 5.1},
+        "Drone2": [
+            {"name": "SubTask2", "object": "RoofTop2", "skill": "CaptureThermalImage", "departure_time": 0.0, "arrival_time": 4.4, "finish_time": 6.0}
         ],
+        "Drone1": [
+            {"name": "SubTask3", "object": "House1", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 1.1, "finish_time": 3.4}
+        ],
+        "Drone3": []
     }
 
     out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saved_gifs")
     os.makedirs(out_dir, exist_ok=True)
 
-    # Part 1
-    anim = animate_schedule(objects, drones, schedule2, dt=0.1, extra_hold=1.5,
-                                       save_path=os.path.join(out_dir, "part1.gif"))
-    plt.show()
-
-    # Part 2
-    anim = animate_schedule(objects, drones, schedule3, dt=0.1, extra_hold=1.5,
-                                       save_path=os.path.join(out_dir, "part2.gif"))
+    anim = animate_schedule(objects, drones, schedule, dt=0.1, extra_hold=1.5)
     plt.show()
