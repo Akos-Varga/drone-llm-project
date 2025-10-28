@@ -41,7 +41,6 @@ def schedules_equal(
     return True
 
 
-# Example usage
 if __name__ == "__main__":
     schedule_a = {
         "Drone1": [
