@@ -1,6 +1,7 @@
 .env
 .venv
 gpu_specs.py
+test.py
 models/
 voxl2/
 GSCE/
