@@ -1,6 +1,6 @@
-from decomposer_coord import messages as decomposer_prompt
-from allocator_coord import messages as allocator_prompt
-from scheduler_coord import messages as scheduler_prompt
+from decomposer import messages as decomposer_prompt
+from allocator import messages as allocator_prompt
+from scheduler import messages as scheduler_prompt
 
 from test_tasks import task_list
 from utils.travel_time import compute_travel_times
@@ -84,7 +84,7 @@ skills, objects, drones = randomizer(skills=skills, objects=objects, drones=dron
 out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saved_gifs")
 os.makedirs(out_dir, exist_ok=True)
 
-for task in task_list[10:12]:
+for task in task_list[:1]:
     print("="*90 + f"\n{task["id"]}: {task["task"]}")
     startTime = time.time()
 
