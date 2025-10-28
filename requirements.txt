@@ -3,4 +3,3 @@ ollama
 openai
 dotenv
 ortools
-pandas
