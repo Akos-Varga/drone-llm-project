@@ -14,7 +14,6 @@ from utils.compare_schedules import schedules_equal
 
 import matplotlib.pyplot as plt
 from pprint import pprint
-import pandas as pd
 import time
 import ast
 import csv
