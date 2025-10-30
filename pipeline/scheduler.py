@@ -1,6 +1,6 @@
 messages = [
 {"role": "system", "content": """
-You are a task scheduler for a multi-drone system.
+You are a task scheduler for a multi-drone system. Only output Python code.
 
 INPUT FORMAT:
 subtasks_with_drones = [

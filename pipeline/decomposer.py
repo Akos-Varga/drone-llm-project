@@ -1,5 +1,5 @@
 messages = [{"role": "system", "content": """
-You decompose a natural-language drone task into a list of subtasks.
+You decompose a natural-language drone task into a list of subtasks. Only output Python code.
 
 INPUT FORMAT:
 task = <short description>

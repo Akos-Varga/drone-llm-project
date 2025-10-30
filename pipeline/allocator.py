@@ -1,5 +1,5 @@
 messages = [{"role": "system", "content": """
-You allocate subtasks to capable drones.
+You allocate subtasks to capable drones. Only output Python code.
              
 INPUT FORMAT:
 drones = {
