@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Header
+from anafi_autonomy.msg import PoseCommand, Pose
+import math
+import time
+
+class PosePublisher(Node):
+    """Publishes PoseCommand messages and reads the current Pose from /anafi/drone/pose."""
+
+    def __init__(self):
+        super().__init__("pose_publisher")
+
+        # --- Publisher (PoseCommand) ---
+        self.cmd_topic = "/anafi/drone/reference/pose"
+        self.publisher = self.create_publisher(PoseCommand, self.cmd_topic, 10)
+        self.get_logger().info(f"Publishing PoseCommand → {self.cmd_topic}")
+
+        # --- Subscriber (Pose) ---
+        self.pose_topic = "/anafi/drone/pose"
+        self.current_pose = None
+        self.create_subscription(Pose, self.pose_topic, self._pose_callback, 10)
+        self.get_logger().info(f"Subscribed to drone pose → {self.pose_topic}")
+
+        # --- Arrival tolerances ---
+        self.pos_tolerance = 0.1
+        self.yaw_tolerance = 5.0
+
+
+    def send_pose(self, x: float, y: float, z: float, yaw_deg: float, frame_id: str = "map"):
+        """Send a single PoseCommand message."""
+        msg = PoseCommand()
+        msg.header = Header()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = frame_id
+        msg.x = float(x)
+        msg.y = float(y)
+        msg.z = float(z)
+        msg.yaw = float(yaw_deg)
+        self.publisher.publish(msg)
+
+        self.get_logger().info(
+            f"Sent PoseCommand: frame='{frame_id}', "
+            f"x={msg.x:.2f}, y={msg.y:.2f}, z={msg.z:.2f}, yaw={msg.yaw:.1f}°"
+        )
+
+    def _pose_callback(self, msg: Pose):
+        """Callback to store the latest /anafi/drone/pose message."""
+        self.current_pose = msg
+
+    def get_pose(self):
+        """Return the most recently received drone pose (or None if nothing received yet)."""
+        return self.current_pose
+    
+    def move_and_execute(self, goal_x, goal_y, goal_z, t, obj, skill):
+        if self.current_pose is None:
+            self.get_logger().warn("No current pose available yet.")
+            return
+        
+        # Compute yaw toward the goal
+        dx = goal_x - self.current_pose.x
+        dy = goal_y - self.current_pose.y
+        yaw_rad = math.atan2(dy, dx)
+        yaw_deg = math.degrees(yaw_rad)
+        self.get_logger().info(f"Moving toward ({goal_x:.2f}, {goal_y:.2f}, {goal_z:.2f})")
+
+        # Send drone to goal pos
+        self.send_pose(goal_x, goal_y, goal_z, yaw_deg)
+
+        # Wait for drone to arrive
+        arrived = False
+
+        while rclpy.ok() and not arrived:
+            rclpy.spin_once(self, timeout_sec=0.1)
+            current = self.get_pose()
+            if current is None:
+                continue
+
+            dx = goal_x - current.x
+            dy = goal_y - current.y
+            dz = goal_z - current.z
+            dist = math.sqrt(dx**2 + dy**2 + dz**2)
+            yaw_err = abs((yaw_deg - current.yaw + 180) % 360 - 180)
+
+            if dist <= self.pos_tolerance and yaw_err <= self.yaw_tolerance:
+                arrived = True
+                self.get_logger().info(f"Arrived at goal (dist={dist:.2f}, yaw_err={yaw_err:.1f})")
+
+        # Execute skill if provided
+        self.get_logger().info(f"Executing skill '{skill}' on '{obj}'")
+        start = time.time()
+        while rclpy.ok() and (time.time() - start < t):
+            rclpy.spin_once(self, timeout_sec=0.1)
+        self.get_logger().info(f"Finished waiting at target after {t:.1f}s.")
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = PosePublisher()
+
+    node.send_pose(1.0, 0.0, 1.5, 0.0)
+
+    try:
+        while rclpy.ok():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
+            pose = node.get_pose()
+            if pose:
+                node.get_logger().info(
+                    f"Current Pose → x={pose.x:.2f}, y={pose.y:.2f}, z={pose.z:.2f}, yaw={pose.yaw:.1f}°"
+                )
+                break
+    except KeyboardInterrupt:
+        pass
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == "__main__":
+    main()

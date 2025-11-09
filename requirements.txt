@@ -3,3 +3,4 @@ ollama
 openai
 dotenv
 ortools
+rclpy-intellisense
