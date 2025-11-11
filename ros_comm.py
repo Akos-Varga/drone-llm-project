@@ -3,7 +3,8 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Header
-from anafi_autonomy.msg import PoseCommand, Pose
+from anafi_autonomy.msg import PoseCommand
+from geometry_msgs.msg import Pose
 import math
 import time
 
@@ -100,7 +101,8 @@ def main(args=None):
     rclpy.init(args=args)
     node = PosePublisher()
 
-    node.send_pose(1.0, 0.0, 1.5, 0.0)
+    while node.publisher.get_subscription_count() == 0 and rclpy.ok():
+        rclpy.spin_once(node, timeout_sec=0.1)
 
     try:
         while rclpy.ok():
@@ -119,5 +121,28 @@ def main(args=None):
     rclpy.shutdown()
 
 
+def main2(args=None):
+    rclpy.init(args=args)
+    node = PosePublisher()
+
+    node.get_logger().info("Waiting for first /anafi/drone/pose message...")
+    while node.get_pose() is None and rclpy.ok():
+        rclpy.spin_once(node, timeout_sec=0.1)
+
+    node.get_logger().info("Got first pose from drone!")
+
+    while node.publisher.get_subscription_count() == 0 and rclpy.ok():
+        node.get_logger().info("Waiting for drone subscriber...")
+        rclpy.spin_once(node, timeout_sec=0.1)
+
+    node.move_and_execute(1.0, 0.0, 2.0, 3, "Tower1", "CaptureRGBImage")
+    node.move_and_execute(2.5, -1.0, 3.5, 5, "RoofTop1", "InspectStructure")
+    
+    node.get_logger().info("Mission complete.")
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+
 if __name__ == "__main__":
-    main()
+    main2()
