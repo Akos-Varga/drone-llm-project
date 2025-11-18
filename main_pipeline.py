@@ -52,18 +52,19 @@ def append_row_csv(save, path, row, fieldnames):
             writer.writerow(row)
 
 # Inference --------------------------------------------------------------------------------
-def pipeline(model, task, skills, objects, drones):
+def pipeline(model, task, skills, objects, drones, solution = None):
     ## Decomposer
-    decomposer_message = build_message(decomposer_prompt, f"task = {task["task"]}\n\nskills = {skills}\n\nobjects = {objects}")
+    decomposer_message = build_message(decomposer_prompt, f"task = {task}\n\nskills = {skills}\n\nobjects = {objects}")
     # print(decomposer_message)
     decomposed_task_str = LM(model=model, messages=decomposer_message, printing=False)
     print(f"\n\nDecomposed task: {decomposed_task_str}")
     decomposed_task = str_to_code(decomposed_task_str)
     if not decomposed_task: 
         return {"schedule": None, "makespan": None, "schedule_vrp": None, "makespan_VRP": None, "error": "ERROR: decomposed_task conversion failed"}
-    error = validate_decomposer(decomposed_task, task["solution"], skills)
-    if error: 
-        return {"schedule": None, "makespan": None, "schedule_vrp": None, "makespan_VRP": None, "error": error}
+    if solution is not None:
+        error = validate_decomposer(decomposed_task, solution, skills)
+        if error: 
+            return {"schedule": None, "makespan": None, "schedule_vrp": None, "makespan_VRP": None, "error": error}
     
     # Allocator
     allocator_message = build_message(allocator_prompt, f"drones = {drones}\n\nsubtasks = {decomposed_task}")
@@ -126,7 +127,7 @@ if __name__ == "__main__":
         for task in task_list[:3]:
             print("="*90 + f"\n{task["id"]}: {task["task"]}")
             startTime = time.time()
-            results = pipeline(model, task, skills, objects, drones)
+            results = pipeline(model, task["task"], skills, objects, drones, task["solution"])
             endTime = time.time()
             inference_time = round(endTime - startTime, 1)
             if save:
