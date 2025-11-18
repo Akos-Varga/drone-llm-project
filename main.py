@@ -1,7 +1,9 @@
 import threading
 import rclpy
-from ros_comm import PosePublisher
-from world import objects, skills
+from publisher import PosePublisher
+from world import skills, objects, drones
+from main_pipeline import pipeline
+from test_tasks import task_list
 
 def wait_for_first_pose(node: PosePublisher):
     node.get_logger().info(f"[{node.drone_prefix}] Waiting for first pose...")
@@ -14,45 +16,58 @@ def wait_for_subscriber(node: PosePublisher):
         node.get_logger().info(f"[{node.drone_prefix}] Waiting for cmd subscriber...")
         rclpy.spin_once(node, timeout_sec=0.1)
 
-def fly_mission(node, drone, schedule, skills, objects):
+def fly_mission(node, drone_name, drone_schedule, skills, objects):
     wait_for_first_pose(node)
     wait_for_subscriber(node)
-    if schedule[drone] is not None:
-        for subtask in schedule[drone]:
-            # print(f"Goal: {objects[subtask["object"]]}\nEx. time: {skills[subtask["skill"]]}\nObject: {subtask["object"]}\nSkill: {subtask["skill"]}\n", "="*90)
-            node.move_and_execute(objects[subtask["object"]], skills[subtask["skill"]], subtask["object"], subtask["skill"])
-    node.get_logger().info(f"[{drone}]: Mission complete.")
-    # print(f"{drone}: mission complete.")
+    for subtask in drone_schedule:
+        # print(f"Goal: {objects[subtask["object"]]}\nEx. time: {skills[subtask["skill"]]}\nObject: {subtask["object"]}\nSkill: {subtask["skill"]}\n", "="*90)
+        node.move_and_execute(objects[subtask["object"]], skills[subtask["skill"]], subtask["object"], subtask["skill"])
+    node.get_logger().info(f"[{drone_name}]: Mission complete.")
+    # print(f"{drone_name}: mission complete.")
 
-    
-schedule = {
-    "Drone1": [
-        {"name": "SubTask3", "object": "Base", "skill": "RecordVideo", "departure_time": 0.0, "arrival_time": 5.1, "finish_time": 5.6},
-        {"name": "SubTask2", "object": "House3", "skill": "RecordVideo", "departure_time": 5.6, "arrival_time": 11.5, "finish_time": 12.0},
-        {"name": "SubTask1", "object": "Tower", "skill": "RecordVideo", "departure_time": 12.0, "arrival_time": 17.8, "finish_time": 18.3}
-    ],
-    "Drone2": [
-        {"name": "SubTask5", "object": "House3", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 3.3, "finish_time": 6.3},
-        {"name": "SubTask4", "object": "Tower", "skill": "CaptureRGBImage", "departure_time": 6.3, "arrival_time": 10.2, "finish_time": 13.2}
-    ],
-    "Drone3": [
-        {"name": "SubTask6", "object": "Base", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 6.9, "finish_time": 9.9}
-    ],
-    "Drone5": []
-}
 
-def main():
+if __name__ == "__main__":
     rclpy.init()
-    try:
-        d1 = PosePublisher()
-        # d2 = PosePublisher()
 
-        t1 = threading.Thread(target=fly_mission, args=(d1, "Drone1", schedule, skills, objects), daemon=True)
-        # t2 = threading.Thread(target=fly_mission, args=(d2, "Drone2", schedule, skills, objects), daemon=True)
-        t1.start()
-        # t2.start()
-        t1.join()
-        # t2.join()
+    # Create one node per drone and get its starting pose
+    pose_publishers = {}
+    try:
+        for drone_name in drones.keys():
+            # Create nodes for drones
+            node = PosePublisher()
+            pose_publishers[drone_name] = node
+
+            # Get start pos
+            wait_for_first_pose(node)
+            start_pose = node.get_pose()
+            drones[drone_name]["pos"] = start_pose
+            node.get_logger().info(f"[{drone_name}] Start pose: {start_pose}")
+
+        # Plan mission
+        task = task_list[0]["task"]
+        results = pipeline("gpt-5-mini", task, skills, objects, drones)
+        schedule = results["schedule"]
+
+        threads = []
+
+        # Create a thread for each drone that has tasks
+        for drone_name, drone_schedule in schedule.items():
+            if not drone_schedule:
+                continue  # skip drones with no tasks
+
+            node = pose_publishers.get(drone_name)
+
+            t = threading.Thread(
+                target=fly_mission,
+                args=(node, drone_name, drone_schedule, skills, objects),
+                daemon=True,
+            )
+            threads.append(t)
+            t.start()
+
+        # Wait for all mission threads to finish
+        for t in threads:
+            t.join()
 
     except KeyboardInterrupt:
         pass
@@ -64,7 +79,3 @@ def main():
             except Exception:
                 pass
         rclpy.shutdown()
-
-
-if __name__ == "__main__":
-    main()
