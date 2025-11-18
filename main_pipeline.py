@@ -52,7 +52,7 @@ def append_row_csv(save, path, row, fieldnames):
             writer.writerow(row)
 
 # Inference --------------------------------------------------------------------------------
-def pipeline(model, task, skills, objects, drones, solution = None):
+def pipeline(model, task, skills, objects, drones, solution = None, calculate_vrp = None):
     ## Decomposer
     decomposer_message = build_message(decomposer_prompt, f"task = {task}\n\nskills = {skills}\n\nobjects = {objects}")
     # print(decomposer_message)
@@ -61,7 +61,7 @@ def pipeline(model, task, skills, objects, drones, solution = None):
     decomposed_task = str_to_code(decomposed_task_str)
     if not decomposed_task: 
         return {"schedule": None, "makespan": None, "schedule_vrp": None, "makespan_VRP": None, "error": "ERROR: decomposed_task conversion failed"}
-    if solution is not None:
+    if solution:
         error = validate_decomposer(decomposed_task, solution, skills)
         if error: 
             return {"schedule": None, "makespan": None, "schedule_vrp": None, "makespan_VRP": None, "error": error}
@@ -90,18 +90,21 @@ def pipeline(model, task, skills, objects, drones, solution = None):
         return {"schedule": None, "makespan": None, "schedule_vrp": None, "makespan_VRP": None, "error": error}
 
     # Calculate with VRP (Vehicle Routing problem)
-    schedule_vrp, makespan_vrp, status = solve_vrp(objects, drones, subtasks_with_drones)
-    print("\n\nSchedule by VRP:")
-    pprint(schedule_vrp, sort_dicts=False)
-    print(f"\n\nSchedule is {status}")
-    identical_schedule = schedules_equal(schedule, schedule_vrp)
-    if identical_schedule: 
-        print("\n\nSchedules are identical.")
-    else: 
-        print("\n\nSchedules are different.")
-    print(f"\n\nMakespan:\n\tLLM: {makespan}\n\tVRP: {makespan_vrp}\n")
-    # Save results
-    return {"schedule": schedule, "makespan": makespan, "schedule_vrp": schedule_vrp, "makespan_VRP": makespan_vrp, "error": None}
+    if calculate_vrp:
+        schedule_vrp, makespan_vrp, status = solve_vrp(objects, drones, subtasks_with_drones)
+        print("\n\nSchedule by VRP:")
+        pprint(schedule_vrp, sort_dicts=False)
+        print(f"\n\nSchedule is {status}")
+        identical_schedule = schedules_equal(schedule, schedule_vrp)
+        if identical_schedule: 
+            print("\n\nSchedules are identical.")
+        else: 
+            print("\n\nSchedules are different.")
+        print(f"\n\nMakespan:\n\tLLM: {makespan}\n\tVRP: {makespan_vrp}\n")
+        # Save results
+        return {"schedule": schedule, "makespan": makespan, "schedule_vrp": schedule_vrp, "makespan_VRP": makespan_vrp, "error": None}
+    else:
+        return {"schedule": schedule, "makespan": makespan, "schedule_vrp": None, "makespan_VRP": None, "error": None}
 
 
 if __name__ == "__main__":
@@ -127,7 +130,7 @@ if __name__ == "__main__":
         for task in task_list[:3]:
             print("="*90 + f"\n{task["id"]}: {task["task"]}")
             startTime = time.time()
-            results = pipeline(model, task["task"], skills, objects, drones, task["solution"])
+            results = pipeline(model, task["task"], skills, objects, drones, task["solution"], calculate_vrp=True)
             endTime = time.time()
             inference_time = round(endTime - startTime, 1)
             if save:
