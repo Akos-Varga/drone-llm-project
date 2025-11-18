@@ -16,12 +16,12 @@ def wait_for_subscriber(node: PosePublisher):
         node.get_logger().info(f"[{node.drone_prefix}] Waiting for cmd subscriber...")
         rclpy.spin_once(node, timeout_sec=0.1)
 
-def fly_mission(node, drone_name, drone_schedule, skills, objects):
+def fly_mission(node: PosePublisher, drone_name, altitude, drone_schedule, skills, objects):
     wait_for_first_pose(node)
     wait_for_subscriber(node)
     for subtask in drone_schedule:
         # print(f"Goal: {objects[subtask["object"]]}\nEx. time: {skills[subtask["skill"]]}\nObject: {subtask["object"]}\nSkill: {subtask["skill"]}\n", "="*90)
-        node.move_and_execute(objects[subtask["object"]], skills[subtask["skill"]], subtask["object"], subtask["skill"])
+        node.move_and_execute(goal=objects[subtask["object"]], altitude=altitude, t=skills[subtask["skill"]], obj=subtask["object"], skill=subtask["skill"])
     node.get_logger().info(f"[{drone_name}]: Mission complete.")
     # print(f"{drone_name}: mission complete.")
 
@@ -31,11 +31,14 @@ if __name__ == "__main__":
 
     # Create one node per drone and get its starting pose
     pose_publishers = {}
+    flight_altitudes = {}
+
     try:
-        for drone_name in drones.keys():
+        for i, drone_name in enumerate(drones.keys()):
             # Create nodes for drones
             node = PosePublisher()
             pose_publishers[drone_name] = node
+            flight_altitudes[drone_name] = i + 1
 
             # Get start pos
             wait_for_first_pose(node)
@@ -59,7 +62,7 @@ if __name__ == "__main__":
 
             t = threading.Thread(
                 target=fly_mission,
-                args=(node, drone_name, drone_schedule, skills, objects),
+                args=(node, drone_name, flight_altitudes["drone_name"], drone_schedule, skills, objects),
                 daemon=True,
             )
             threads.append(t)

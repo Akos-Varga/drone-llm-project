@@ -31,7 +31,7 @@ class PosePublisher(Node):
 
 
     def send_pose(self, pos, yaw_deg, frame_id = "map"):
-        """Send a single PoseCommand message."""
+        """Send a single PoseCommand message and wait until drone arrives"""
         msg = PoseCommand()
         msg.header = Header()
         msg.header.stamp = self.get_clock().now().to_msg()
@@ -47,6 +47,26 @@ class PosePublisher(Node):
             f"x={msg.x:.2f}, y={msg.y:.2f}, z={msg.z:.2f}, yaw={msg.yaw:.1f}°"
         )
 
+        # Wait for drone to arrive
+        arrived = False
+
+        while rclpy.ok() and not arrived:
+            rclpy.spin_once(self, timeout_sec=0.1)
+            current = self.get_pose()
+            if current is None:
+                continue
+
+            dx = pos[0] - current.x
+            dy = pos[1] - current.y
+            dz = pos[2] - current.z
+            dist = math.sqrt(dx**2 + dy**2 + dz**2)
+            yaw_err = abs((yaw_deg - current.yaw + 180) % 360 - 180)
+
+            if dist <= self.pos_tolerance and yaw_err <= self.yaw_tolerance:
+                arrived = True
+                self.get_logger().info(f"Arrived at goal (dist={dist:.2f}, yaw_err={yaw_err:.1f})")
+
+
     def _pose_callback(self, msg: Pose):
         """Callback to store the latest /anafi/drone/pose message."""
         self.current_pose = msg
@@ -55,10 +75,14 @@ class PosePublisher(Node):
         """Return the most recently received drone pose (or None if nothing received yet)."""
         return self.current_pose
     
-    def move_and_execute(self, goal, t, obj, skill):
+    def move_and_execute(self, goal, altitude, t, obj, skill):
+        """Move to an object at a certain altitude and execute task."""
         if self.current_pose is None:
             self.get_logger().warn("No current pose available yet.")
             return
+        
+        # Move drone to flying altitude
+        self.send_pose((self.current_pose.x, self.current_pose.y, altitude), self.current_pose.yaw)
         
         # Compute yaw toward the goal
         dx = goal[0] - self.current_pose.x
@@ -68,27 +92,11 @@ class PosePublisher(Node):
         self.get_logger().info(f"Moving toward ({goal[0]:.2f}, {goal[1]:.2f}, {goal[2]:.2f})")
 
         # Send drone to goal pos
-        self.send_pose(goal, yaw_deg)
+        self.send_pose((goal[0], goal[1], altitude), yaw_deg)
 
-        # Wait for drone to arrive
-        # arrived = False
-# 
-        # while rclpy.ok() and not arrived:
-        #     rclpy.spin_once(self, timeout_sec=0.1)
-        #     current = self.get_pose()
-        #     if current is None:
-        #         continue
-# 
-        #     dx = goal[0] - current.x
-        #     dy = goal[1] - current.y
-        #     dz = goal[2] - current.z
-        #     dist = math.sqrt(dx**2 + dy**2 + dz**2)
-        #     yaw_err = abs((yaw_deg - current.yaw + 180) % 360 - 180)
-# 
-        #     if dist <= self.pos_tolerance and yaw_err <= self.yaw_tolerance:
-        #         arrived = True
-        #         self.get_logger().info(f"Arrived at goal (dist={dist:.2f}, yaw_err={yaw_err:.1f})")
-
+        # Adjust z
+        self.send_pose((self.current_pose.x, self.current_pose.y, goal[2]), yaw_deg)
+        
         # Execute skill if provided
         self.get_logger().info(f"Executing skill '{skill}' on '{obj}'")
         start = time.time()
@@ -98,30 +106,6 @@ class PosePublisher(Node):
 
 
 def main(args=None):
-    rclpy.init(args=args)
-    node = PosePublisher()
-
-    while node.publisher.get_subscription_count() == 0 and rclpy.ok():
-        rclpy.spin_once(node, timeout_sec=0.1)
-
-    try:
-        while rclpy.ok():
-            rclpy.spin_once(node, timeout_sec=0.1)
-
-            pose = node.get_pose()
-            if pose:
-                node.get_logger().info(
-                    f"Current Pose → x={pose.x:.2f}, y={pose.y:.2f}, z={pose.z:.2f}, yaw={pose.yaw:.1f}°"
-                )
-                break
-    except KeyboardInterrupt:
-        pass
-
-    node.destroy_node()
-    rclpy.shutdown()
-
-
-def main2(args=None):
     rclpy.init(args=args)
     node = PosePublisher()
 
@@ -135,8 +119,8 @@ def main2(args=None):
         node.get_logger().info("Waiting for drone subscriber...")
         rclpy.spin_once(node, timeout_sec=0.1)
 
-    node.move_and_execute((1.0, 0.0, 2.0), 3, "Tower1", "CaptureRGBImage")
-    node.move_and_execute((2.5, -1.0, 3.5), 5, "RoofTop1", "InspectStructure")
+    node.move_and_execute(goal=(1.0, 0.0, 2.0), altitude=1, t=3, obj="Tower1", skill="CaptureRGBImage")
+    node.move_and_execute(goal=(2.5, -1.0, 3.5), altitude=2, t=5, obj="RoofTop1", skill="InspectStructure")
     
     node.get_logger().info("Mission complete.")
 
@@ -145,4 +129,4 @@ def main2(args=None):
 
 
 if __name__ == "__main__":
-    main2()
+    main()
