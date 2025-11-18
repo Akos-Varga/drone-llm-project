@@ -1,43 +1,70 @@
-from main_pipeline import pipeline, append_row_csv
-from world import skills, objects, drones
-from test_tasks import task_list
-import time
-import os
+import threading
+import rclpy
+from ros_comm import PosePublisher
+from world import objects, skills
 
-# Models -----------------------------------------------------------------------------------
-m1 = "codegemma:7b"
-m2 = "qwen2.5-coder:7b"
-m3 = "gpt-4o-mini"
-m4 = "gpt-4o"
-m5 = "gpt-4.1-mini"
-m6 = "gpt-4.1"
-m7 = "gpt-5-mini"
-m8 = "gpt-5"
-models = [m7]
+def wait_for_first_pose(node: PosePublisher):
+    node.get_logger().info(f"[{node.drone_prefix}] Waiting for first pose...")
+    while rclpy.ok() and node.get_pose() is None:
+        rclpy.spin_once(node, timeout_sec=0.1)
+    node.get_logger().info(f"[{node.drone_prefix}] Got first pose!")
+
+def wait_for_subscriber(node: PosePublisher):
+    while rclpy.ok() and node.publisher.get_subscription_count() == 0:
+        node.get_logger().info(f"[{node.drone_prefix}] Waiting for cmd subscriber...")
+        rclpy.spin_once(node, timeout_sec=0.1)
+
+def fly_mission(node, drone, schedule, skills, objects):
+    wait_for_first_pose(node)
+    wait_for_subscriber(node)
+    if schedule[drone] is not None:
+        for subtask in schedule[drone]:
+            # print(f"Goal: {objects[subtask["object"]]}\nEx. time: {skills[subtask["skill"]]}\nObject: {subtask["object"]}\nSkill: {subtask["skill"]}\n", "="*90)
+            node.move_and_execute(objects[subtask["object"]], skills[subtask["skill"]], subtask["object"], subtask["skill"])
+    node.get_logger().info(f"[{drone}]: Mission complete.")
+    # print(f"{drone}: mission complete.")
+
+    
+schedule = {
+    "Drone1": [
+        {"name": "SubTask3", "object": "Base", "skill": "RecordVideo", "departure_time": 0.0, "arrival_time": 5.1, "finish_time": 5.6},
+        {"name": "SubTask2", "object": "House3", "skill": "RecordVideo", "departure_time": 5.6, "arrival_time": 11.5, "finish_time": 12.0},
+        {"name": "SubTask1", "object": "Tower", "skill": "RecordVideo", "departure_time": 12.0, "arrival_time": 17.8, "finish_time": 18.3}
+    ],
+    "Drone2": [
+        {"name": "SubTask5", "object": "House3", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 3.3, "finish_time": 6.3},
+        {"name": "SubTask4", "object": "Tower", "skill": "CaptureRGBImage", "departure_time": 6.3, "arrival_time": 10.2, "finish_time": 13.2}
+    ],
+    "Drone3": [
+        {"name": "SubTask6", "object": "Base", "skill": "CaptureRGBImage", "departure_time": 0.0, "arrival_time": 6.9, "finish_time": 9.9}
+    ],
+    "Drone5": []
+}
+
+def main():
+    rclpy.init()
+    try:
+        d1 = PosePublisher()
+        # d2 = PosePublisher()
+
+        t1 = threading.Thread(target=fly_mission, args=(d1, "Drone1", schedule, skills, objects), daemon=True)
+        # t2 = threading.Thread(target=fly_mission, args=(d2, "Drone2", schedule, skills, objects), daemon=True)
+        t1.start()
+        # t2.start()
+        t1.join()
+        # t2.join()
+
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Destroy nodes and shutdown
+        for n in list(rclpy.get_default_context().get_nodes()):
+            try:
+                n.destroy_node()
+            except Exception:
+                pass
+        rclpy.shutdown()
 
 
-# skills, objects, drones = randomizer(skills=skills, objects=objects, drones=drones)
-
-save = False
-if save:
-    CSV_PATH = os.path.join("results", "test_results2.csv")
-    FIELDNAMES = ["model", "task_id", "LLM_makespan", "VRP_makespan", "LLM_inference_time", "LLM_error"]
-
-for model in models:
-    for task in task_list[:3]:
-        print("="*90 + f"\n{task["id"]}: {task["task"]}")
-        startTime = time.time()
-        results = pipeline(model, task, skills, objects, drones)
-        endTime = time.time()
-        inference_time = round(endTime - startTime, 1)
-        if save:
-            row = {"model": model, "task_id": task["id"], "LLM_makespan": results["makespan"], "VRP_makespan": results["makespan_VRP"], "LLM_inference_time": inference_time, "LLM_error": results["error"]}
-            append_row_csv(save, CSV_PATH, row, FIELDNAMES)
-
-        # Visualize
-        # anim = animate_schedule(objects, drones, schedule, dt=0.1, extra_hold=1.5, save_path=os.path.join("results", "animations", f"{task['id']}.gif"))
-        # plt.show()
-        # Update drone positions
-        # for drone, info in schedule.items():
-        #     if info:
-        #         drones[drone]["pos"] = objects[info[-1]["object"]]
+if __name__ == "__main__":
+    main()

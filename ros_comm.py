@@ -30,15 +30,15 @@ class PosePublisher(Node):
         self.yaw_tolerance = 5.0
 
 
-    def send_pose(self, x: float, y: float, z: float, yaw_deg: float, frame_id: str = "map"):
+    def send_pose(self, pos, yaw_deg, frame_id = "map"):
         """Send a single PoseCommand message."""
         msg = PoseCommand()
         msg.header = Header()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = frame_id
-        msg.x = float(x)
-        msg.y = float(y)
-        msg.z = float(z)
+        msg.x = float(pos[0])
+        msg.y = float(pos[1])
+        msg.z = float(pos[2])
         msg.yaw = float(yaw_deg)
         self.publisher.publish(msg)
 
@@ -55,39 +55,39 @@ class PosePublisher(Node):
         """Return the most recently received drone pose (or None if nothing received yet)."""
         return self.current_pose
     
-    def move_and_execute(self, goal_x, goal_y, goal_z, t, obj, skill):
+    def move_and_execute(self, goal, t, obj, skill):
         if self.current_pose is None:
             self.get_logger().warn("No current pose available yet.")
             return
         
         # Compute yaw toward the goal
-        dx = goal_x - self.current_pose.x
-        dy = goal_y - self.current_pose.y
+        dx = goal[0] - self.current_pose.x
+        dy = goal[1] - self.current_pose.y
         yaw_rad = math.atan2(dy, dx)
         yaw_deg = math.degrees(yaw_rad)
-        self.get_logger().info(f"Moving toward ({goal_x:.2f}, {goal_y:.2f}, {goal_z:.2f})")
+        self.get_logger().info(f"Moving toward ({goal[0]:.2f}, {goal[1]:.2f}, {goal[2]:.2f})")
 
         # Send drone to goal pos
-        self.send_pose(goal_x, goal_y, goal_z, yaw_deg)
+        self.send_pose(goal, yaw_deg)
 
         # Wait for drone to arrive
-        arrived = False
-
-        while rclpy.ok() and not arrived:
-            rclpy.spin_once(self, timeout_sec=0.1)
-            current = self.get_pose()
-            if current is None:
-                continue
-
-            dx = goal_x - current.x
-            dy = goal_y - current.y
-            dz = goal_z - current.z
-            dist = math.sqrt(dx**2 + dy**2 + dz**2)
-            yaw_err = abs((yaw_deg - current.yaw + 180) % 360 - 180)
-
-            if dist <= self.pos_tolerance and yaw_err <= self.yaw_tolerance:
-                arrived = True
-                self.get_logger().info(f"Arrived at goal (dist={dist:.2f}, yaw_err={yaw_err:.1f})")
+        # arrived = False
+# 
+        # while rclpy.ok() and not arrived:
+        #     rclpy.spin_once(self, timeout_sec=0.1)
+        #     current = self.get_pose()
+        #     if current is None:
+        #         continue
+# 
+        #     dx = goal[0] - current.x
+        #     dy = goal[1] - current.y
+        #     dz = goal[2] - current.z
+        #     dist = math.sqrt(dx**2 + dy**2 + dz**2)
+        #     yaw_err = abs((yaw_deg - current.yaw + 180) % 360 - 180)
+# 
+        #     if dist <= self.pos_tolerance and yaw_err <= self.yaw_tolerance:
+        #         arrived = True
+        #         self.get_logger().info(f"Arrived at goal (dist={dist:.2f}, yaw_err={yaw_err:.1f})")
 
         # Execute skill if provided
         self.get_logger().info(f"Executing skill '{skill}' on '{obj}'")
@@ -135,8 +135,8 @@ def main2(args=None):
         node.get_logger().info("Waiting for drone subscriber...")
         rclpy.spin_once(node, timeout_sec=0.1)
 
-    node.move_and_execute(1.0, 0.0, 2.0, 3, "Tower1", "CaptureRGBImage")
-    node.move_and_execute(2.5, -1.0, 3.5, 5, "RoofTop1", "InspectStructure")
+    node.move_and_execute((1.0, 0.0, 2.0), 3, "Tower1", "CaptureRGBImage")
+    node.move_and_execute((2.5, -1.0, 3.5), 5, "RoofTop1", "InspectStructure")
     
     node.get_logger().info("Mission complete.")
 
