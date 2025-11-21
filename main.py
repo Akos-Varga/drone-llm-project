@@ -5,24 +5,29 @@ from world import skills, objects, drones
 from main_pipeline import pipeline
 from test_tasks import task_list
 
+DRONE_TO_NODE = {
+    "Drone1": "anafi3",
+    "Drone2": "anafi1",
+}
+
 def wait_for_first_pose(node: PosePublisher):
-    node.get_logger().info(f"[{node.drone_prefix}] Waiting for first pose...")
+    node.get_logger().info(f"[{node.drone_name}] Waiting for first pose...")
     while rclpy.ok() and node.get_pose() is None:
         rclpy.spin_once(node, timeout_sec=0.1)
-    node.get_logger().info(f"[{node.drone_prefix}] Got first pose!")
+    node.get_logger().info(f"[{node.drone_name}] Got first pose!")
 
 def wait_for_subscriber(node: PosePublisher):
     while rclpy.ok() and node.publisher.get_subscription_count() == 0:
-        node.get_logger().info(f"[{node.drone_prefix}] Waiting for cmd subscriber...")
+        node.get_logger().info(f"[{node.drone_name}] Waiting for cmd subscriber...")
         rclpy.spin_once(node, timeout_sec=0.1)
 
-def fly_mission(node: PosePublisher, drone_name, altitude, drone_schedule, skills, objects):
+def fly_mission(node: PosePublisher, altitude, drone_schedule, skills, objects):
     wait_for_first_pose(node)
     wait_for_subscriber(node)
     for subtask in drone_schedule:
         # print(f"Goal: {objects[subtask["object"]]}\nEx. time: {skills[subtask["skill"]]}\nObject: {subtask["object"]}\nSkill: {subtask["skill"]}\n", "="*90)
         node.move_and_execute(goal=objects[subtask["object"]], altitude=altitude, t=skills[subtask["skill"]], obj=subtask["object"], skill=subtask["skill"])
-    node.get_logger().info(f"[{drone_name}]: Mission complete.")
+    node.get_logger().info(f"[{node.drone_name}]: Mission complete.")
     # print(f"{drone_name}: mission complete.")
 
 
@@ -36,7 +41,7 @@ if __name__ == "__main__":
     try:
         for i, drone_name in enumerate(drones.keys()):
             # Create nodes for drones
-            node = PosePublisher()
+            node = PosePublisher(drone_name, DRONE_TO_NODE)
             pose_publishers[drone_name] = node
             flight_altitudes[drone_name] = i + 1
 
@@ -62,7 +67,7 @@ if __name__ == "__main__":
 
             t = threading.Thread(
                 target=fly_mission,
-                args=(node, drone_name, flight_altitudes["drone_name"], drone_schedule, skills, objects),
+                args=(node, flight_altitudes["drone_name"], drone_schedule, skills, objects),
                 daemon=True,
             )
             threads.append(t)

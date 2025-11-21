@@ -11,16 +11,20 @@ import time
 class PosePublisher(Node):
     """Publishes PoseCommand messages and reads the current Pose from /anafi/drone/pose."""
 
-    def __init__(self):
-        super().__init__("pose_publisher")
-
+    def __init__(self, drone_name: str, name_map: dict):
+        self.drone_name = drone_name
+        if self.drone_name not in name_map:
+            raise ValueError(f"No mapping found for {drone_name}.")
+        self.anafi_name = name_map[self.drone_name]
+        super().__init__(f"{self.drone_name}_pose_publisher")
+    
         # --- Publisher (PoseCommand) ---
-        self.cmd_topic = "/anafi/drone/reference/pose"
+        self.cmd_topic = f"{self.anafi_name}/drone/reference/pose"
         self.publisher = self.create_publisher(PoseCommand, self.cmd_topic, 10)
         self.get_logger().info(f"Publishing PoseCommand → {self.cmd_topic}")
 
         # --- Subscriber (Pose) ---
-        self.pose_topic = "/anafi/drone/pose"
+        self.pose_topic = f"{self.anafi_name}/drone/pose"
         self.current_pose = None
         self.create_subscription(Pose, self.pose_topic, self._pose_callback, 10)
         self.get_logger().info(f"Subscribed to drone pose → {self.pose_topic}")
@@ -107,9 +111,9 @@ class PosePublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = PosePublisher()
+    node = PosePublisher("Drone1")
 
-    node.get_logger().info("Waiting for first /anafi/drone/pose message...")
+    node.get_logger().info("Waiting for first /anafi1/drone/pose message...")
     while node.get_pose() is None and rclpy.ok():
         rclpy.spin_once(node, timeout_sec=0.1)
 
