@@ -1,4 +1,4 @@
-from world import skills, objects, drones
+from worlds.test_world import skills, objects, drones
 
 from pipeline.decomposer import messages as decomposer_prompt
 from pipeline.allocator import messages as allocator_prompt

@@ -1,13 +1,13 @@
 import threading
 import rclpy
 from publisher import PosePublisher
-from world import skills, objects, drones
+from worlds.real_world import skills, objects, drones
 from main_pipeline import pipeline
 from test_tasks import task_list
 
 DRONE_TO_NODE = {
-    "Drone1": "anafi3",
-    "Drone2": "anafi1",
+    "Drone1": "anafi1",
+    "Drone2": "anafi2",
 }
 
 def wait_for_first_pose(node: PosePublisher):
