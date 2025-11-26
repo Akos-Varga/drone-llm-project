@@ -1,13 +1,19 @@
 import threading
 import rclpy
 from publisher import PosePublisher
+from model_discovery import AnafiModelScanner
 from worlds.real_world import skills, objects, drones
 from main_pipeline import pipeline
-from test_tasks import task_list
 
-DRONE_TO_NODE = {
-    "Drone1": "anafi1",
-    "Drone2": "anafi2",
+# DRONE_TO_NODE = {
+#     "Drone1": "anafi1",
+#     "Drone2": "anafi2",
+# }
+
+DRONE_TO_MODEL = {
+    "Drone1" : "4k",
+    "Drone2" : "usa",
+    "Drone3": "thermal"
 }
 
 def wait_for_first_pose(node: PosePublisher):
@@ -34,6 +40,13 @@ def fly_mission(node: PosePublisher, altitude, drone_schedule, skills, objects):
 if __name__ == "__main__":
     rclpy.init()
 
+    NUM_DRONES = 3
+    scanner = AnafiModelScanner(NUM_DRONES, DRONE_TO_MODEL)
+    DRONE_TO_NODE = scanner.discover_models()
+    print("\n=== ANAFI MODEL MAP ===")
+    for drone, model in DRONE_TO_NODE.items():
+        print(f"{drone}: {model}")
+
     # Create one node per drone and get its starting pose
     pose_publishers = {}
     flight_altitudes = {}
@@ -51,8 +64,11 @@ if __name__ == "__main__":
             drones[drone_name]["pos"] = start_pose
             node.get_logger().info(f"[{drone_name}] Start pose: {start_pose}")
 
+            # SET DRONE SPEED HERE
+            node.set_speed(drones[drone_name]["speed"])
+
         # Plan mission
-        task = task_list[0]["task"]
+        task = ""  # DEFINE A TASK FOR THE NEW SKILLS 
         results = pipeline("gpt-5-mini", task, skills, objects, drones)
         schedule = results["schedule"]
 
