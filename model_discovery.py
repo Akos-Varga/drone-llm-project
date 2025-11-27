@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from rclpy.parameter_client import AsyncParametersClient
+from rcl_interfaces.srv import GetParameters
 
 
 class AnafiModelScanner(Node):
@@ -16,24 +16,34 @@ class AnafiModelScanner(Node):
         Read the drone/model parameter from /anafiX/anafi
         Returns string if found, else None.
         """
-        node_name = f"{namespace}/anafi"      # e.g. /anafi1/anafi
-        client = AsyncParametersClient(self, node_name)
+        node_name = f"{namespace}/anafi"    # e.g. anafi1/anafi
+        srv_name = f"{node_name}/get_parameters"
 
-        # Wait for parameter server
-        self.get_logger().info(f"Checking {node_name} ...")
-        for _ in range(20):
-            if client.service_is_ready():
-                break
-            rclpy.spin_once(self, timeout_sec=0.1)
-        else:
-            self.get_logger().warn(f"{node_name} parameter service not available.")
+        # Create client
+        client = self.create_client(GetParameters, srv_name)
+
+        self.get_logger().info(f"Checking parameter service {srv_name} ...")
+
+        # Wait for service
+        if not client.wait_for_service(timeout_sec=2.0):
+            self.get_logger().warn(f"{srv_name} not available.")
             return None
 
-        future = client.get_parameters(["drone/model"])
+        # Prepare request
+        req = GetParameters.Request()
+        req.names = ["drone/model"]
+
+        # Call service
+        future = client.call_async(req)
         rclpy.spin_until_future_complete(self, future)
 
+        if not future.result():
+            self.get_logger().warn(f"{node_name} returned no result.")
+            return None
+
         result = future.result()
-        if not result or len(result.values) == 0:
+
+        if len(result.values) == 0:
             self.get_logger().warn(f"{node_name} has no drone/model parameter.")
             return None
 
@@ -43,7 +53,7 @@ class AnafiModelScanner(Node):
 
     def discover_models(self):
         """
-        Returns a dict: {"thermal" : "anafi1": ,"usa" : "anafi2", ...}
+        Returns a dict: {"thermal" : "anafi1", "usa" : "anafi2", ...}
         """
 
         mapping = {}
@@ -51,20 +61,25 @@ class AnafiModelScanner(Node):
         for i in range(1, self.num_drones + 1):
             anafi_name = f"anafi{i}"
             model = self.get_model_for(anafi_name)
-            for k, v in self.DRONE_TO_MODEL.items():
-                if v == model:
-                    drone = k
-            mapping[drone] = anafi_name
+
+            if model is None:
+                continue
+
+            # Find matching symbolic drone name
+            for drone_name, model_value in self.DRONE_TO_MODEL.items():
+                if model_value == model:
+                    mapping[drone_name] = anafi_name
 
         return mapping
 
 
 def main():
     DRONE_TO_MODEL = {
-        "Drone1" : "4k",
-        "Drone2" : "usa",
+        "Drone1": "4k",
+        "Drone2": "usa",
         "Drone3": "thermal"
     }
+
     rclpy.init()
 
     NUM_DRONES = 4
