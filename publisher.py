@@ -34,7 +34,7 @@ class PosePublisher(Node):
 
         # --- Subscriber (Pose feedback) ---
         # /anafi1/drone/pose
-        self.pose_topic = f"{self.base_ns}/drone/pose"
+        self.pose_topic = "/vicon/parrot_4K/parrot_4K"
         self.current_pose = None
         self.create_subscription(Pose, self.pose_topic, self._pose_callback, 10)
         self.get_logger().info(f"Subscribed to drone pose → {self.pose_topic}")
