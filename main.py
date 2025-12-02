@@ -1,6 +1,7 @@
 import threading
 import rclpy
 import time
+from rclpy.executors import MultiThreadedExecutor
 from publisher import PosePublisher
 # from model_discovery import AnafiModelScanner
 from worlds.real_world import skills, objects, drones
@@ -20,13 +21,14 @@ DRONE_TO_MODEL = {
 def wait_for_first_pose(node: PosePublisher):
     node.get_logger().info(f"[{node.drone_name}] Waiting for first pose...")
     while rclpy.ok() and node.get_pose() is None:
-        rclpy.spin_once(node, timeout_sec=0.1)
+        time.sleep(0.1)
     node.get_logger().info(f"[{node.drone_name}] Got first pose!")
 
 def wait_for_subscriber(node: PosePublisher):
+    node.get_logger().info(f"[{node.drone_name}] Waiting for cmd subscriber...")
     while rclpy.ok() and node.publisher.get_subscription_count() == 0:
-        node.get_logger().info(f"[{node.drone_name}] Waiting for cmd subscriber...")
-        rclpy.spin_once(node, timeout_sec=0.1)
+        time.sleep(0.1)
+    node.get_logger().info(f"[{node.drone_name}] Got subscriber!")
 
 def fly_mission(node: PosePublisher, altitude, drone_schedule, skills, objects):
     wait_for_first_pose(node)
@@ -51,30 +53,35 @@ if __name__ == "__main__":
         "Drone1": "anafi1",
         "Drone2": "anafi2",
     }
-    # scanner = AnafiModelScanner(NUM_DRONES, DRONE_TO_MODEL)
-    # DRONE_TO_NODE = scanner.discover_models()
-    # print("\n=== ANAFI MODEL MAP ===")
-    # for drone, model in DRONE_TO_NODE.items():
-    #     print(f"{drone}: {model}")
 
-    # Create one node per drone and get its starting pose
     pose_publishers = {}
     flight_altitudes = {}
 
     for i, drone_name in enumerate(drones.keys()):
-        # Create nodes for drones
         node = PosePublisher(drone_name, DRONE_TO_NODE)
         pose_publishers[drone_name] = node
         flight_altitudes[drone_name] = i * 0.5 + 2.5
 
-        # Get start pos
-        wait_for_first_pose(node)
-        # start_pose = node.get_pose()
-        # drones[drone_name]['pos'] = start_pose
-        # node.get_logger().info(f"[{drone_name}] Start pose: {start_pose}")
+    # ---- Create executor and spin in a separate thread ----
+    executor = MultiThreadedExecutor()
 
-        # SET DRONE SPEED HERE
-        # node.set_speed(drones[drone_name]['speed'])
+    for node in pose_publishers.values():
+        executor.add_node(node)
+
+    import threading
+
+    def spin_executor():
+        try:
+            executor.spin()
+        finally:
+            for n in pose_publishers.values():
+                executor.remove_node(n)
+
+    spin_thread = threading.Thread(target=spin_executor, daemon=True)
+    spin_thread.start()
+
+    for drone_name, node in pose_publishers.items():
+        wait_for_first_pose(node)
 
     # Plan mission
     task = "Record video of both wind turbines and capture thermal images of both towers."
@@ -83,12 +90,11 @@ if __name__ == "__main__":
 
     threads = []
 
-    # Create a thread for each drone that has tasks
     for drone_name, drone_schedule in schedule.items():
         if not drone_schedule:
-            continue  # skip drones with no tasks
+            continue
 
-        node = pose_publishers.get(drone_name)
+        node = pose_publishers[drone_name]
 
         t = threading.Thread(
             target=fly_mission,
@@ -98,8 +104,13 @@ if __name__ == "__main__":
         threads.append(t)
         t.start()
 
-    # Wait for all mission threads to finish
     for t in threads:
         t.join()
 
+    # Cleanup
+    for node in pose_publishers.values():
+        node.destroy_node()
+
+    executor.shutdown()
     rclpy.shutdown()
+

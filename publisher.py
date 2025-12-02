@@ -122,7 +122,7 @@ class PosePublisher(Node):
         # Wait until the drone arrives
         arrived = False
         while rclpy.ok() and not arrived:
-            rclpy.spin_once(self, timeout_sec=0.1)
+            time.sleep(0.1)
             current = self.get_pose()
             if current is None:
                 continue
@@ -214,17 +214,16 @@ class PosePublisher(Node):
         self.get_logger().info(f"Executing skill '{skill}' on '{obj}'...")
         start = time.time()
         while rclpy.ok() and (time.time() - start < t):
-            rclpy.spin_once(self, timeout_sec=0.1)
+            time.sleep(0.1)
 
         self.get_logger().info(f"Task complete after {t:.1f}s.")
 
 
-def main(args=None):
+if __name__ == "__main__":
     DRONE_TO_NODE = {
-    "Drone1": "anafi",
-    #"Drone2": "anafi2",
+    "Drone1": "anafi"
     }
-    rclpy.init(args=args)
+    rclpy.init(args=None)
     node = PosePublisher("Drone1", DRONE_TO_NODE)
 
     node.get_logger().info("Waiting for first pose message...")
@@ -238,13 +237,6 @@ def main(args=None):
         rclpy.spin_once(node, timeout_sec=0.1)
 
     node.get_logger().info("Drone subscriber connected!")
-
-    #while rclpy.ok():
-#
-    #    node.send_pose((1,0,2), 20)
-#
-    #    rclpy.spin_once(node, timeout_sec=0.1)
-    #    time.sleep(0.2)
 
     try:
         node.arm()
@@ -262,6 +254,3 @@ def main(args=None):
         node.destroy_node()
         rclpy.shutdown()
 
-
-if __name__ == "__main__":
-    main()
