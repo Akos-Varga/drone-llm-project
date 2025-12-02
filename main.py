@@ -39,7 +39,6 @@ def fly_mission(node: PosePublisher, altitude, drone_schedule, skills, objects):
     time.sleep(5)
     node.offboard()
     for subtask in drone_schedule:
-        # print(f"Goal: {objects[subtask['object']]}\nEx. time: {skills[subtask['skill']]}\nObject: {subtask['object']}\nSkill: {subtask['skill']}\n", "="*90)
         node.move_and_execute(goal=objects[subtask['object']], altitude=altitude, t=skills[subtask['skill']], obj=subtask['object'], skill=subtask['skill'])
     node.get_logger().info(f"[{node.drone_name}]: Mission complete.")
     node.land()
@@ -54,13 +53,20 @@ if __name__ == "__main__":
         "Drone2": "anafi2",
     }
 
+    MAX_ALTITUDE = 4.0
+
     pose_publishers = {}
     flight_altitudes = {}
 
     for i, drone_name in enumerate(drones.keys()):
         node = PosePublisher(drone_name, DRONE_TO_NODE)
         pose_publishers[drone_name] = node
-        flight_altitudes[drone_name] = i * 0.5 + 2.5
+        node.set_max_altitude(MAX_ALTITUDE)
+        planned_altitude = i * 0.5 + 2.5
+        if planned_altitude > MAX_ALTITUDE:
+            raise ValueError(f"[{drone_name}] Planned altitude {planned_altitude:.2f} m exceeds max allowable altitude {MAX_ALTITUDE:.2f} m")
+        flight_altitudes[drone_name] = planned_altitude
+        node.set_speed(drones[drone_name]['speed'])
 
     # ---- Create executor and spin in a separate thread ----
     executor = MultiThreadedExecutor()
@@ -113,4 +119,3 @@ if __name__ == "__main__":
 
     executor.shutdown()
     rclpy.shutdown()
-

@@ -218,6 +218,59 @@ class PosePublisher(Node):
 
         self.get_logger().info(f"Task complete after {t:.1f}s.")
 
+    # ---------------- Parameter setters ----------------
+    def set_speed(self, speed: float):
+        """
+        Sets the drone/max_horizontal_speed parameter.
+        """
+        full_name = f"{self.base_ns}/drone/max_horizontal_speed"
+        try:
+            result = self.set_parameters([
+                rclpy.parameter.Parameter(
+                    name=full_name,
+                    value=speed,
+                    type_=rclpy.Parameter.Type.DOUBLE
+                )
+            ])
+
+            if result[0].successful:
+                self.get_logger().info(
+                    f"Set max_horizontal_speed → {speed:.2f}"
+                )
+            else:
+                self.get_logger().warn(
+                    f"Failed to set parameter {full_name}: {result[0].reason}"
+                )
+
+        except Exception as e:
+            self.get_logger().error(f"Error setting {full_name}: {e}")
+
+    def set_max_altitude(self, altitude: float):
+        """
+        Sets the drone/max_altitude parameter.
+        """
+        full_name = f"{self.base_ns}/drone/max_altitude"
+        try:
+            result = self.set_parameters([
+                rclpy.parameter.Parameter(
+                    name=full_name,
+                    value=altitude,
+                    type_=rclpy.Parameter.Type.DOUBLE
+                )
+            ])
+
+            if result[0].successful:
+                self.get_logger().info(
+                    f"Set max_altitude → {altitude:.2f}"
+                )
+            else:
+                self.get_logger().warn(
+                    f"Failed to set parameter {full_name}: {result[0].reason}"
+                )
+
+        except Exception as e:
+            self.get_logger().error(f"Error setting {full_name}: {e}")
+
 
 if __name__ == "__main__":
     DRONE_TO_NODE = {
