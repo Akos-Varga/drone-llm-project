@@ -53,9 +53,10 @@ def fly_mission(node: PosePublisher, altitude, drone_schedule, skills, objects):
     node.offboard()
     for subtask in drone_schedule:
         node.move_and_execute(goal=objects[subtask['object']], altitude=altitude, t=skills[subtask['skill']], obj=subtask['object'], skill=subtask['skill'], yaw_to_obj=OBJECT_TO_YAW[subtask['object']])
+    node.move_and_execute(goal=objects[f"Base{int(node.drone_name[-1])}"], altitude=altitude, t=0.0, obj=f"Base{int(node.drone_name[-1])}", skill="ReturnToBase", yaw_to_obj=OBJECT_TO_YAW[f"Base{int(node.drone_name[-1])}"])
     node.get_logger().info(f"[{node.drone_name}]: Mission complete.")
     node.land()
-    node.destroy_node()
+    # node.destroy_node()
 
 
 if __name__ == "__main__":
