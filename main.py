@@ -49,8 +49,8 @@ if __name__ == "__main__":
     rclpy.init()
 
     DRONE_TO_NODE = {
-        "Drone1": "anafi1",
-        "Drone2": "anafi2",
+        "Drone1": "anafi2",
+        "Drone2": "anafi1",
     }
 
     MAX_ALTITUDE = 4.0
@@ -74,8 +74,6 @@ if __name__ == "__main__":
     for node in pose_publishers.values():
         executor.add_node(node)
 
-    import threading
-
     def spin_executor():
         try:
             executor.spin()
@@ -90,9 +88,42 @@ if __name__ == "__main__":
         wait_for_first_pose(node)
 
     # Plan mission
-    task = "Record video of both wind turbines and capture thermal images of both towers."
-    results = pipeline("gpt-5-mini", task, skills, objects, drones)
-    schedule = results['schedule']
+    # task = "Record a video of both wind turbines and capture thermal images of both towers. Drone1 return to Base1 and Drone2 return to Base2 after completing their tasks."
+    # results = pipeline("gpt-5-mini", task, skills, objects, drones)
+    # schedule = results['schedule']
+
+    schedule = {
+       "Drone1": [
+           {"name": "SubTask1", "object": "WindTurbine1", "skill": "RecordVideo", "departure_time": 0.0, "arrival_time": 3.9, "finish_time": 8.9},
+           {"name": "SubTask2", "object": "WindTurbine2", "skill": "RecordVideo", "departure_time": 8.9, "arrival_time": 11.0, "finish_time": 16.0}
+       ],
+       "Drone2": [
+           {"name": "SubTask4", "object": "Tower2", "skill": "CaptureThermalImage", "departure_time": 0.0, "arrival_time": 2.7, "finish_time": 4.9},
+           {"name": "SubTask3", "object": "Tower1", "skill": "CaptureThermalImage", "departure_time": 4.9, "arrival_time": 8.1, "finish_time": 10.3}
+       ]
+    }
+
+    # schedule = {
+    #     "Drone1": [
+    #         {
+    #             "name": "SubTask1",
+    #             "object": "WindTurbine1",
+    #             "skill": "RecordVideo",
+    #             "departure_time": 0.0,
+    #             "arrival_time": 3.9,
+    #             "finish_time": 8.9
+    #         },
+    #         {
+    #             "name": "SubTask2",
+    #             "object": "WindTurbine2",
+    #             "skill": "RecordVideo",
+    #             "departure_time": 8.9,
+    #             "arrival_time": 11.0,
+    #             "finish_time": 16.0
+    #         }
+    #     ]
+    # }
+
 
     threads = []
 

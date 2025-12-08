@@ -6,6 +6,10 @@ from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
 from anafi_autonomy.msg import PoseCommand
 from anafi_autonomy.msg import KeyboardCommand
+from rcl_interfaces.msg import ParameterValue
+from rcl_interfaces.srv import SetParameters
+from rcl_interfaces.msg import Parameter as ParameterMsg
+
 
 import math
 import time
@@ -73,6 +77,16 @@ class PosePublisher(Node):
         # ---------------- Arrival tolerances ----------------
         self.pos_tolerance = 0.1
         self.yaw_tolerance = 5.0
+
+        self.anafi_node_name = f"{self.base_ns}/anafi"
+        self.set_param_client = self.create_client(SetParameters, f"{self.anafi_node_name}/set_parameters")
+
+        # Wait until available
+        while not self.set_param_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info(f"Waiting for parameter service: {self.anafi_node_name}/set_parameters") 
+
+        self.get_logger().info(f"Parameter client connected to {self.anafi_node_name}")
+
 
     # ---------------- Pose callback ----------------
 
@@ -219,57 +233,42 @@ class PosePublisher(Node):
         self.get_logger().info(f"Task complete after {t:.1f}s.")
 
     # ---------------- Parameter setters ----------------
+
+    def set_param(self, name: str, value: float):
+        """Set a float/double parameter via the SetParameters service."""
+
+        param_msg = ParameterMsg()
+        param_msg.name = name
+        param_msg.value = ParameterValue()
+        param_msg.value.type = 3  # DOUBLE
+        param_msg.value.double_value = float(value)
+
+        # Build request
+        request = SetParameters.Request()
+        request.parameters = [param_msg]
+
+        # Call service
+        future = self.set_param_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+
+        if future.result() is None:
+            self.get_logger().error("Parameter service call failed")
+            return False
+
+        result = future.result().results[0]
+        if result.successful:
+            self.get_logger().info(f"Set {name} → {value}")
+            return True
+        else:
+            self.get_logger().warn(f"Failed to set {name}: {result.reason}")
+            return False
+                
     def set_speed(self, speed: float):
-        """
-        Sets the drone/max_horizontal_speed parameter.
-        """
-        full_name = f"{self.base_ns}/drone/max_horizontal_speed"
-        try:
-            result = self.set_parameters([
-                rclpy.parameter.Parameter(
-                    name=full_name,
-                    value=speed,
-                    type_=rclpy.Parameter.Type.DOUBLE
-                )
-            ])
-
-            if result[0].successful:
-                self.get_logger().info(
-                    f"Set max_horizontal_speed → {speed:.2f}"
-                )
-            else:
-                self.get_logger().warn(
-                    f"Failed to set parameter {full_name}: {result[0].reason}"
-                )
-
-        except Exception as e:
-            self.get_logger().error(f"Error setting {full_name}: {e}")
+        self.set_param("drone/max_horizontal_speed", speed)
+        self.set_param("drone/max_vertical_speed", speed)
 
     def set_max_altitude(self, altitude: float):
-        """
-        Sets the drone/max_altitude parameter.
-        """
-        full_name = f"{self.base_ns}/drone/max_altitude"
-        try:
-            result = self.set_parameters([
-                rclpy.parameter.Parameter(
-                    name=full_name,
-                    value=altitude,
-                    type_=rclpy.Parameter.Type.DOUBLE
-                )
-            ])
-
-            if result[0].successful:
-                self.get_logger().info(
-                    f"Set max_altitude → {altitude:.2f}"
-                )
-            else:
-                self.get_logger().warn(
-                    f"Failed to set parameter {full_name}: {result[0].reason}"
-                )
-
-        except Exception as e:
-            self.get_logger().error(f"Error setting {full_name}: {e}")
+        self.set_param("drone/max_altitude", altitude)
 
 
 if __name__ == "__main__":
