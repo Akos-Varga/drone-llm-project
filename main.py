@@ -7,10 +7,23 @@ from publisher import PosePublisher
 from worlds.real_world import skills, objects, drones
 from main_pipeline import pipeline
 
-# DRONE_TO_NODE = {
-#     "Drone1": "anafi1",
-#     "Drone2": "anafi2",
-# }
+DRONE_TO_NODE = {
+    "Drone1": "anafi2",
+    "Drone2": "anafi1",
+}
+
+OBJECT_TO_YAW = {
+    "Base1": 0,
+    "Base2": 0,
+    "House1": 90,
+    "House2": 0,
+    "WindTurbine1": 180,
+    "WindTurbine2": 180,
+    "Tower1": 90,
+    "Tower2": 180
+}
+
+MAX_ALTITUDE = 4.0
 
 DRONE_TO_MODEL = {
     "Drone1" : "4k",
@@ -39,7 +52,7 @@ def fly_mission(node: PosePublisher, altitude, drone_schedule, skills, objects):
     time.sleep(5)
     node.offboard()
     for subtask in drone_schedule:
-        node.move_and_execute(goal=objects[subtask['object']], altitude=altitude, t=skills[subtask['skill']], obj=subtask['object'], skill=subtask['skill'])
+        node.move_and_execute(goal=objects[subtask['object']], altitude=altitude, t=skills[subtask['skill']], obj=subtask['object'], skill=subtask['skill'], yaw_to_obj=OBJECT_TO_YAW[subtask['object']])
     node.get_logger().info(f"[{node.drone_name}]: Mission complete.")
     node.land()
     node.destroy_node()
@@ -47,13 +60,6 @@ def fly_mission(node: PosePublisher, altitude, drone_schedule, skills, objects):
 
 if __name__ == "__main__":
     rclpy.init()
-
-    DRONE_TO_NODE = {
-        "Drone1": "anafi2",
-        "Drone2": "anafi1",
-    }
-
-    MAX_ALTITUDE = 4.0
 
     pose_publishers = {}
     flight_altitudes = {}

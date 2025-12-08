@@ -198,7 +198,7 @@ class PosePublisher(Node):
 
     # ---------------- High-level task ----------------
 
-    def move_and_execute(self, goal, altitude, t, obj, skill):
+    def move_and_execute(self, goal, altitude, t, obj, skill, yaw_to_obj):
         if self.current_pose is None:
             self.get_logger().warn("No current pose available yet.")
             return
@@ -222,7 +222,7 @@ class PosePublisher(Node):
 
         # Step 4: descend/ascend to goal Z
         pose = self.get_pose()
-        self.send_pose((pose.x, pose.y, goal[2]), yaw_deg)
+        self.send_pose((pose.x, pose.y, goal[2]), yaw_to_obj)
 
         # Step 5: execute skill
         self.get_logger().info(f"Executing skill '{skill}' on '{obj}'...")
