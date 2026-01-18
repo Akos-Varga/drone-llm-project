@@ -61,6 +61,7 @@ OPENAI_API_KEY=your_api_key_here
 
 2. `python-dotenv` is already included in `requirements.txt`.
 
+---
 
 ## Running on the Test Dataset (Simulated World)
 
@@ -124,8 +125,6 @@ Source ROS 2 before running:
 ```bash
 source /opt/ros/humble/setup.bash
 ```
-
----
 
 ### Entry Point
 
