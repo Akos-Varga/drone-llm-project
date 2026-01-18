@@ -13,8 +13,8 @@ The README focuses on **how to run the code**, required setup, folder structure,
 
 ```
 .
-├── main_pipeline.py        # Run planning on test dataset (no real drones)
-├── main.py                 # Run planning + execution on real drones (ROS 2)
+├── main_pipeline.py        # Run planning on test dataset using the simulation environment
+├── main.py                 # Run planning + execution on drones (ROS 2)
 ├── test_tasks.py           # Test task dataset
 ├── publisher.py            # ROS 2 drone interface
 ├── pipeline/               # LLM prompts, planners, validators, utilities
