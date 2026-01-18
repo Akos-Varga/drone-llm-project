@@ -1,14 +1,11 @@
 # Large Language Model–Based Multi-Agent Planning for Autonomous Drones
 
-This repository implements an **LLM-based multi-agent task planning and scheduling pipeline** for autonomous drones. The system supports:
+This repository contains code for running **LLM-based multi-agent planning** for autonomous drones in two modes:
 
-- **Offline evaluation** using a **test dataset / simulated world**
-- **Online execution** with **real autonomous drones** using ROS 2
+1. **Offline evaluation on a test dataset (simulated world)**
+2. **Online execution with real autonomous drones (ROS 2)**
 
-The core idea is to use a Large Language Model (LLM) to:
-1. **Decompose** a high-level task into subtasks
-2. **Allocate** subtasks to multiple drones based on capabilities
-3. **Schedule** the subtasks while respecting travel time and constraints
+The README focuses on **how to run the code**, required setup, folder structure, and command-line arguments.
 
 ---
 
@@ -16,15 +13,15 @@ The core idea is to use a Large Language Model (LLM) to:
 
 ```
 .
-├── main_pipeline.py        # Run pipeline on test tasks (no real drones)
-├── main.py                 # Run pipeline and execute on real drones (ROS 2)
-├── pipeline/               # LLM prompts, validators, schedulers, utilities
+├── main_pipeline.py        # Run planning on test dataset (no real drones)
+├── main.py                 # Run planning + execution on real drones (ROS 2)
+├── test_tasks.py           # Test task dataset
+├── publisher.py            # ROS 2 drone interface
+├── pipeline/               # LLM prompts, planners, validators, utilities
 ├── worlds/
 │   ├── test_world/         # Simulated world (skills, objects, drones)
-│   └── real_world/         # Real drone configuration and environment
-├── test_tasks.py           # Benchmark task dataset
-├── publisher.py            # ROS 2 drone interface (PosePublisher)
-├── results/                # CSV results and visualizations (generated)
+│   └── real_world/         # Real drone configuration
+├── results/                # Generated CSVs and visualizations
 └── README.md
 ```
 
@@ -32,9 +29,9 @@ The core idea is to use a Large Language Model (LLM) to:
 
 ## Requirements
 
-### General
 - **Python ≥ 3.9**
-- An environment variable or config allowing access to an LLM (e.g., OpenAI-compatible API)
+- Internet access for LLM API calls
+- (For drones) **ROS 2** installed and configured
 
 Install Python dependencies:
 
@@ -42,13 +39,32 @@ Install Python dependencies:
 pip install -r requirements.txt
 ```
 
-(If `requirements.txt` is missing, ensure you have: `numpy`, `matplotlib`, `pandas`, `openai` or compatible client, etc.)
-
 ---
 
-## Running the Pipeline on the Test Dataset (No Real Drones)
+## LLM API Key Setup
 
-This mode evaluates the planning system using a **simulated environment** and predefined benchmark tasks.
+The LLM API key is loaded inside `pipeline/utils/inference.py` using `python-dotenv`:
+
+```python
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key=api_key)
+```
+
+### Steps
+
+1. Create a `.env` file in the project root:
+
+```bash
+OPENAI_API_KEY=your_api_key_here
+```
+
+2. `python-dotenv` is already included in `requirements.txt`.
+
+
+## Running on the Test Dataset (Simulated World)
+
+This mode runs the full planning pipeline on a **predefined test dataset** without controlling real drones.
 
 ### Entry Point
 
@@ -56,59 +72,52 @@ This mode evaluates the planning system using a **simulated environment** and pr
 python main_pipeline.py
 ```
 
-### Common Options
+### Command-Line Arguments
 
 | Argument | Description |
 |--------|------------|
 | `--model` | LLM model name (default: `gpt-5-mini`) |
 | `--task_id` | Run a specific task (e.g., `Task1`) |
-| `--save` | Save results to CSV (`results/test_results.csv`) |
-| `--vrp` | Compute VRP baseline for comparison (slow) |
-| `--visualize` | Generate GIF animation of the schedule |
+| `--save` | Save results to `results/test_results.csv` |
+| `--vrp` | Compute VRP baseline for comparison |
+| `--visualize` | Generate a GIF animation of the schedule |
 
 ### Examples
 
-Run **all test tasks**:
+Run all tasks:
 
 ```bash
 python main_pipeline.py --model gpt-5-mini
 ```
 
-Run a **single task** with visualization:
+Run a single task with visualization:
 
 ```bash
 python main_pipeline.py --task_id Task1 --visualize
 ```
 
-Run with **VRP comparison** and save results:
+Save results to CSV:
 
 ```bash
-python main_pipeline.py --save --vrp
+python main_pipeline.py --save
 ```
 
-### Output
+### Outputs
 
-- **Console logs**: decomposed tasks, allocations, schedules
-- **CSV results**: `results/test_results.csv`
-- **Animations**: `results/animations/TaskX.gif`
+- CSV results: `results/test_results.csv`
+- Animations (optional): `results/animations/*.gif`
 
 ---
 
 ## Running on Real Autonomous Drones (ROS 2)
 
-This mode executes the planned schedule on **real drones** using ROS 2.
-
-⚠️ **WARNING**: This will command real drones. Ensure a safe flight environment.
+**Warning:** This mode sends commands to drones. Only run in a controlled and safe environment.
 
 ### Prerequisites
 
-- **ROS 2 installed** (tested with Humble)
-- Drone drivers and middleware running (PX4 / MAVROS / custom bridge)
-- Properly configured:
-  - `worlds/real_world/skills`
-  - `worlds/real_world/objects`
-  - `worlds/real_world/drones`
-  - Drone namespaces and node mappings (`DRONE_TO_NODE`)
+- **ROS 2 (e.g., Humble)** installed
+- Drone middleware running (PX4 / MAVROS / custom bridge)
+- Correct configuration in: `worlds/real_world.py`
 
 Source ROS 2 before running:
 
@@ -124,84 +133,31 @@ source /opt/ros/humble/setup.bash
 python main.py --task "<TASK DESCRIPTION>"
 ```
 
-### Required Arguments
+### Command-Line Arguments
 
 | Argument | Description |
 |--------|------------|
-| `--task` | Natural language task description |
-
-### Optional Arguments
-
-| Argument | Description |
-|--------|------------|
+| `--task` | Natural language task description (required) |
 | `--model` | LLM model name (default: `gpt-5-mini`) |
-
----
 
 ### Example
 
 ```bash
 python main.py \
   --model gpt-5-mini \
-  --task "Inspect the rooftop and the tower, then return to base"
+  --task "Inspect the rooftop and tower, then return to base"
 ```
 
-### Execution Flow
+### Notes
 
-1. ROS 2 nodes are created for each drone
-2. Initial poses are received
-3. LLM pipeline generates a **multi-drone schedule**
-4. Each drone:
-   - Arms
-   - Takes off
-   - Executes assigned subtasks
-   - Returns to base
-   - Lands
-
-Each drone runs in a **separate thread** using a `MultiThreadedExecutor`.
-
----
-
-## LLM Planning Pipeline
-
-The pipeline consists of three LLM-driven stages:
-
-1. **Decomposer** – converts a natural language task into symbolic subtasks
-2. **Allocator** – assigns subtasks to drones based on capabilities
-3. **Scheduler** – orders tasks while considering travel times
-
-Validation modules ensure:
-- Skill feasibility
-- Temporal consistency
-- Collision-free schedules
-
----
-
-## Notes & Tips
-
-- For repeatability, use a fixed model and temperature in `pipeline/utils/inference.py`
-- VRP comparison is useful for benchmarking but not required for deployment
-- Real-world flight altitude is automatically staggered to avoid collisions
+- One ROS 2 node is launched per drone
+- Each drone executes its assigned schedule in parallel
+- Altitudes are automatically staggered for safety
 
 ---
 
 ## Safety Disclaimer
 
-This software directly controls physical drones. The authors assume **no liability** for damage, injury, or regulatory violations. Always:
-
-- Test in simulation first
-- Fly in controlled environments
-- Follow local aviation regulations
+This software controls physical robots. The authors assume **no responsibility** for damage, injury, or regulatory violations. Always test in simulation first and follow local aviation laws.
 
 ---
-
-## Citation
-
-If you use this work in academic research, please cite the associated paper or repository.
-
----
-
-## Contact
-
-For questions or collaboration, please open an issue or contact the repository maintainer.
-
