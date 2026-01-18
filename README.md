@@ -145,7 +145,7 @@ python main.py --task "<TASK DESCRIPTION>"
 ```bash
 python main.py \
   --model gpt-5-mini \
-  --task "Inspect the rooftop and tower, then return to base"
+  --task "Inspect the rooftop and tower."
 ```
 
 ### Notes
@@ -159,5 +159,3 @@ python main.py \
 ## Safety Disclaimer
 
 This software controls physical robots. The authors assume **no responsibility** for damage, injury, or regulatory violations. Always test in simulation first and follow local aviation laws.
-
----
