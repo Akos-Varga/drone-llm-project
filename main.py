@@ -1,35 +1,11 @@
 import threading
 import rclpy
 import time
+import argparse
 from rclpy.executors import MultiThreadedExecutor
 from publisher import PosePublisher
-# from model_discovery import AnafiModelScanner
-from worlds.real_world import skills, objects, drones
+from worlds.real_world import skills, objects, drones, DRONE_TO_NODE,OBJECT_TO_YAW, MAX_ALTITUDE
 from main_pipeline import pipeline
-
-DRONE_TO_NODE = {
-    "Drone1": "anafi2",
-    "Drone2": "anafi1",
-}
-
-OBJECT_TO_YAW = {
-    "Base1": 0,
-    "Base2": 0,
-    "House1": 90,
-    "House2": 0,
-    "WindTurbine1": 180,
-    "WindTurbine2": 180,
-    "Tower1": 90,
-    "Tower2": 180
-}
-
-MAX_ALTITUDE = 4.0
-
-DRONE_TO_MODEL = {
-    "Drone1" : "4k",
-    "Drone2" : "usa",
-    "Drone3": "thermal"
-}
 
 def wait_for_first_pose(node: PosePublisher):
     node.get_logger().info(f"[{node.drone_name}] Waiting for first pose...")
@@ -56,10 +32,25 @@ def fly_mission(node: PosePublisher, altitude, drone_schedule, skills, objects):
     node.move_and_execute(goal=objects[f"Base{int(node.drone_name[-1])}"], altitude=altitude, t=0.0, obj=f"Base{int(node.drone_name[-1])}", skill="ReturnToBase", yaw_to_obj=OBJECT_TO_YAW[f"Base{int(node.drone_name[-1])}"])
     node.get_logger().info(f"[{node.drone_name}]: Mission complete.")
     node.land()
-    # node.destroy_node()
 
 
 if __name__ == "__main__":
+    # --- Parse Command Line Arguments ---
+    parser = argparse.ArgumentParser(description="Run drone mission with a specific model and task.")
+    parser.add_argument(
+        "--model", 
+        type=str, 
+        default="gpt-5-mini", 
+        help="The LLM model to use (default: gpt-5-mini)"
+    )
+    parser.add_argument(
+        "--task", 
+        type=str, 
+        required=True, 
+        help="The task description string."
+    )
+    args = parser.parse_args()
+
     rclpy.init()
 
     pose_publishers = {}
@@ -94,43 +85,12 @@ if __name__ == "__main__":
     for drone_name, node in pose_publishers.items():
         wait_for_first_pose(node)
 
-    # Plan mission
-    # task = "Record a video of both wind turbines and capture thermal images of both towers. Drone1 return to Base1 and Drone2 return to Base2 after completing their tasks."
-    # results = pipeline("gpt-5-mini", task, skills, objects, drones)
-    # schedule = results['schedule']
+    # --- Plan mission ---
+    print(f"Planning mission using model: {args.model}")
+    print(f"Task: {args.task}")
 
-    schedule = {
-       "Drone1": [
-           {"name": "SubTask1", "object": "WindTurbine1", "skill": "RecordVideo", "departure_time": 0.0, "arrival_time": 3.9, "finish_time": 8.9},
-           {"name": "SubTask2", "object": "WindTurbine2", "skill": "RecordVideo", "departure_time": 8.9, "arrival_time": 11.0, "finish_time": 16.0}
-       ],
-       "Drone2": [
-           {"name": "SubTask4", "object": "Tower2", "skill": "CaptureThermalImage", "departure_time": 0.0, "arrival_time": 2.7, "finish_time": 4.9},
-           {"name": "SubTask3", "object": "Tower1", "skill": "CaptureThermalImage", "departure_time": 4.9, "arrival_time": 8.1, "finish_time": 10.3}
-       ]
-    }
-
-    # schedule = {
-    #     "Drone1": [
-    #         {
-    #             "name": "SubTask1",
-    #             "object": "WindTurbine1",
-    #             "skill": "RecordVideo",
-    #             "departure_time": 0.0,
-    #             "arrival_time": 3.9,
-    #             "finish_time": 8.9
-    #         },
-    #         {
-    #             "name": "SubTask2",
-    #             "object": "WindTurbine2",
-    #             "skill": "RecordVideo",
-    #             "departure_time": 8.9,
-    #             "arrival_time": 11.0,
-    #             "finish_time": 16.0
-    #         }
-    #     ]
-    # }
-
+    results = pipeline(args.model, args.task, skills, objects, drones)
+    schedule = results['schedule']
 
     threads = []
 

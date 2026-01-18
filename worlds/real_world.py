@@ -28,10 +28,30 @@ drones = {
         "pos": (-1, -1, 0),
         "skills": ["CaptureRGBImage", "CaptureThermalImage", "CaptureZoomImage", "RecordVideo", "DualSpectralInspect"],
         "speed": 0.5
+    },
+    "Drone3": {
+        "pos": (42, 72, 57),
+        "skills": ["CaptureRGBImage", "CaptureThermalImage", "RecordVideo", "DualSpectralInspect"],
+        "speed": 15
     }
-    # "Drone3": {
-    #     "pos": (42, 72, 57),
-    #     "skills": ["CaptureRGBImage", "CaptureThermalImage", "RecordVideo", "DualSpectralInspect"],
-    #     "speed": 15
-    # }
 }
+
+# Match drone name from world with anafi topic name
+DRONE_TO_NODE = {
+    "Drone1": "anafi2",
+    "Drone2": "anafi1",
+}
+
+# Make drones face object
+OBJECT_TO_YAW = {
+    "Base1": 0,
+    "Base2": 0,
+    "House1": 90,
+    "House2": 0,
+    "WindTurbine1": 180,
+    "WindTurbine2": 180,
+    "Tower1": 90,
+    "Tower2": 180
+}
+
+MAX_ALTITUDE = 4.0
